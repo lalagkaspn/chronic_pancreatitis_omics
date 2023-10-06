@@ -329,9 +329,6 @@ rownames(full_pdata) = full_pdata$GEO_accession
 rm(pdata143754, pdata61166, pdata71989, pdata101462, pdata91035, pdata77858)
 table(full_pdata$Tissue_type)
 
-# Save pheno data
-openxlsx::write.xlsx(full_pdata, "DGEA/Pheno.xlsx", overwrite = TRUE)
-
 ## ---------------------------
 ## Expression data
 ## ---------------------------
@@ -354,15 +351,15 @@ na_esets
 # GSE101462: 22
 # GSE77858: 5907
 
-# GSE77858 has a lot of missing values. Certain columns (~40% of the samples)
-# have more than 80% missing values (on the same rows) and therefore imputation
-# could yield quite biased results and is avoided in this case. The rows with
-# more than 25% missing values are removed.
+## We will impute missing values using KNN imputation. 
+## However, GSE77858 has a lot of missing values. 
+## We remove rows with more than 25% missing values because they will negatively affect imputation
 GEOsets[["GSE101462"]] = GEOsets[["GSE101462"]][rowSums(is.na(GEOsets[["GSE101462"]]@assayData[["exprs"]]))/
                                                 length(colnames(GEOsets[["GSE101462"]]@assayData[["exprs"]])) < 0.25, ]
 GEOsets[["GSE77858"]] = GEOsets[["GSE77858"]][rowSums(is.na(GEOsets[["GSE77858"]]@assayData[["exprs"]]))/
                                                 length(colnames(GEOsets[["GSE77858"]]@assayData[["exprs"]])) < 0.25, ]
 
+## -- KNN imputation -- ##
 # GSE101462
 RNGversion("4.0.2")
 eset101462 = GEOsets[["GSE101462"]]@assayData[["exprs"]]
@@ -382,9 +379,10 @@ esets[["GSE77858"]] = as.data.frame(eset77858); rm(eset77858)
 esets[["GSE101462"]] = as.data.frame(eset101462); rm(eset101462)
 
 ##### Annotation esets with Entrez ID's #####
-# GSE143754 - Platform [HTA-2_0] Affymetrix Human Transcriptome Array 2.0 [transcript (gene) version] -->
+# GSE143754
+# Platform [HTA-2_0] Affymetrix Human Transcriptome Array 2.0 [transcript (gene) version] -->
 # gene data for each probe were downloaded from: https://data.broadinstitute.org/gsea-msigdb/msigdb/annotations_legacy/unconverted_chips/HTA_2_0.chip
-hta2_0_probe_to_gene = data.table::fread("/Users/panagiotisnikolaoslalagkas/Desktop/chronic_pancreatitis/platforms_probes_to_genes/HTA_2_0.chip.txt")
+hta2_0_probe_to_gene = data.table::fread("platforms_probes_to_genes/HTA_2_0.chip.txt")
 fdata143754 = fData(GEOsets$GSE143754) %>%
   dplyr::select(probeset_id) %>%
   filter(probeset_id %in% hta2_0_probe_to_gene$`Probe Set ID`) %>%
@@ -393,7 +391,7 @@ fdata143754 = fData(GEOsets$GSE143754) %>%
   dplyr::select(ID = probeset_id, ENTREZ_GENE_ID = "Entrez Gene") %>%
   distinct()
 
-## For probes that match to the same EntrezID, calcalate variance across all samples and keep the probe with the max variance
+## For probes that match to the same EntrezID, calculate variance across all samples and keep the probe with max variance
 esets[["GSE143754"]]$variance = rowVars(as.matrix(esets[["GSE143754"]]))
 esets[["GSE143754"]] = esets[["GSE143754"]] %>%
   mutate(ID = rownames(esets[["GSE143754"]])) %>%
@@ -407,41 +405,42 @@ esets[["GSE143754"]] = esets[["GSE143754"]] %>%
   dplyr::select(-variance)
 rm(fdata143754, hta2_0_probe_to_gene)
 
-# GSE61166 --> need to match gene sequence to gene ID
+# GSE61166 
+# need to match gene sequence to gene ID
 # No information for corresponding genes provided in GEOset
 # Three separate .fasta files were prepared based on the probe sequences available at the GPL file.
 # BLASTN alignment (against Nucleotide sequences, "nt") was performed to annotate probes with RefSeq gene IDs: https://blast.ncbi.nlm.nih.gov/Blast.cgi
 
-## Prepare files for BLASTN
-# gse61166_sequences = fData(GEOsets$GSE61166) %>% dplyr::select(SEQUENCE) %>% distinct()
-# gse61166_sequences = gse61166_sequences %>% mutate(seq_id = paste0(">sequence_", seq(1:nrow(gse61166_sequences))), .before = SEQUENCE)
-# gse61166_sequences = do.call(rbind, lapply(seq(nrow(gse61166_sequences)), function(i) t(gse61166_sequences[i, ])))
-# gse61166_sequences = data.frame(gse61166_sequences)
-# gse61166_sequences = data.frame(sequences = gse61166_sequences$ASHGA5P000001)
-# gse61166_sequences_1 = data.frame(sequences = gse61166_sequences[1:30000, ])
-# gse61166_sequences_2 = data.frame(sequences = gse61166_sequences[30001:60000, ])
-# gse61166_sequences_3 = data.frame(sequences = gse61166_sequences[60001:91178, ])
-# 
-# data.table::fwrite(gse61166_sequences_1, "/Users/panagiotisnikolaoslalagkas/Desktop/GSE61166_sequences_1.fasta", sep = "\t", row.names = FALSE, col.names = FALSE)
-# data.table::fwrite(gse61166_sequences_2, "/Users/panagiotisnikolaoslalagkas/Desktop/GSE61166_sequences_2.fasta", sep = "\t", row.names = FALSE, col.names = FALSE)
-# data.table::fwrite(gse61166_sequences_3, "/Users/panagiotisnikolaoslalagkas/Desktop/GSE61166_sequences_3.fasta", sep = "\t", row.names = FALSE, col.names = FALSE)
+# Prepare files for BLASTN
+gse61166_sequences = fData(GEOsets$GSE61166) %>% dplyr::select(SEQUENCE) %>% distinct()
+gse61166_sequences = gse61166_sequences %>% mutate(seq_id = paste0(">sequence_", seq(1:nrow(gse61166_sequences))), .before = SEQUENCE)
+gse61166_sequences = do.call(rbind, lapply(seq(nrow(gse61166_sequences)), function(i) t(gse61166_sequences[i, ])))
+gse61166_sequences = data.frame(gse61166_sequences)
+gse61166_sequences = data.frame(sequences = gse61166_sequences$ASHGA5P000001)
+gse61166_sequences_1 = data.frame(sequences = gse61166_sequences[1:30000, ]) # the number of rows included in each file is based on the capacity of BLASTN for a run
+gse61166_sequences_2 = data.frame(sequences = gse61166_sequences[30001:60000, ])
+gse61166_sequences_3 = data.frame(sequences = gse61166_sequences[60001:91178, ])
+# save files
+data.table::fwrite(gse61166_sequences_1, "data/GSE61166_sequences_1.fasta", sep = "\t", row.names = FALSE, col.names = FALSE) ; rm(gse61166_sequences_1)
+data.table::fwrite(gse61166_sequences_2, "data/GSE61166_sequences_2.fasta", sep = "\t", row.names = FALSE, col.names = FALSE) ; rm(gse61166_sequences_2)
+data.table::fwrite(gse61166_sequences_3, "data/GSE61166_sequences_3.fasta", sep = "\t", row.names = FALSE, col.names = FALSE) ; rm(gse61166_sequences_3)
 
 ## RefSeq to EntrezID reference data frame
 ref = org.Hs.egREFSEQ2EG
 mapped_genes_official = mappedkeys(ref)
-ref_df = as.data.frame(ref[mapped_genes_official])
+ref_df = as.data.frame(ref[mapped_genes_official]) ; rm(ref, mapped_genes_official)
 ref_df = ref_df %>% dplyr::rename(ENTREZ_GENE_ID = gene_id, RefSeq = accession)
 length(unique(ref_df$RefSeq)) == length(ref_df$RefSeq) # TRUE --> No duplicates in RefSeq
 
 # Read csv results from BLASTN
-blastn_1 = read.csv(file = "/Users/panagiotisnikolaoslalagkas/Desktop/chronic_pancreatitis/data/Sequences_1.csv", header = FALSE)
-blastn_2 = read.csv(file = "/Users/panagiotisnikolaoslalagkas/Desktop/chronic_pancreatitis/data/Sequences_2.csv", header = FALSE)
-blastn_3 = read.csv(file = "/Users/panagiotisnikolaoslalagkas/Desktop/chronic_pancreatitis/data/Sequences_3.csv", header = FALSE)
+blastn_1 = read.csv(file = "data/Sequences_1.csv", header = FALSE)
+blastn_2 = read.csv(file = "data/Sequences_2.csv", header = FALSE)
+blastn_3 = read.csv(file = "data/Sequences_3.csv", header = FALSE)
 blastn = rbind(blastn_1, blastn_2, blastn_3)
 blastn$V2 = gsub("\\..", "", blastn$V2) # RefSeq column: keep main nomenclature - ignore variants
 blastn = blastn %>%
   dplyr::select(V1, V2, V3, V11) %>%
-  dplyr::filter(V3 == 100.00) %>%
+  dplyr::filter(V3 == 100.00) %>% # keep rows with 100% confidence aligned score
   distinct()
 rm(blastn_1, blastn_2, blastn_3)
 colnames(blastn) = c("probe", "RefSeq", "Alignment_perc", "E_value")
@@ -462,9 +461,9 @@ mapped_blastn = inner_join(blastn, ref_df, by = "RefSeq") %>%
   dplyr::select(probe = probe_ID, RefSeq, ENTREZ_GENE_ID) %>%
   distinct() %>%
   dplyr::select(probe, ENTREZ_GENE_ID) # we do not use distinct() here for filtering purposes
-
+rm(ref_df)
 # Probes which match to multiple ID's: 
-# Check if >50% of Entrez ID's mapping to a probe are actually a unique Entrez ID
+# Check if >50% of Entrez ID's mapping to a probe are actually a unique Entrez ID (aka a probe matches to one Entrez ID)
 # If yes, map the probe to that Entrez ID. If not, discard the probe
 # Process described here and suggested by Ensembl: 
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3431719/
@@ -485,9 +484,9 @@ for (i in 1:nrow(mapped_blastn)){
   cat(i, "\n")
 } ; rm(i)
 
-# We now keep everything with unique Entrez mapping percentage over 50%
+# We now keep everything with unique Entrez mapping percentage over 50%.
 # That is guaranteed to keep one Entrez ID for each probe and discard probes 
-# for which only lower mapping percentages exist
+# for which only lower mapping percentages exist.
 
 mapped_blastn_filt = mapped_blastn %>%
   dplyr::filter(unique_Entrez_perc > 50) %>%
@@ -495,14 +494,14 @@ mapped_blastn_filt = mapped_blastn %>%
   distinct()
 
 length(which(duplicated(mapped_blastn_filt$probe)))
-# [1] 0
+# 0
 length(which(duplicated(mapped_blastn_filt$ENTREZ_GENE_ID)))
-# [1] 11,950
-
-# That means each probe is mapped to a unique Entrez ID, but multiple probes
+# 11,950
+# The above numbers mean each probe is mapped to a unique Entrez ID, but multiple probes
 # may map to the same ID. For each of these probes we calculate the variance and keep the one 
 # with the max variance, as we did previously.
 
+# GSE61166
 esets[["GSE61166"]]$variance = rowVars(as.matrix(esets[["GSE61166"]]))
 esets[["GSE61166"]] = esets[["GSE61166"]] %>%
   mutate(probe = rownames(esets[["GSE61166"]])) %>%
@@ -521,8 +520,6 @@ fdata71989 = fData(GEOsets$GSE71989) %>%
   dplyr::select(ID, ENTREZ_GENE_ID) %>%
   dplyr::filter(!grepl("///", ENTREZ_GENE_ID)) %>%
   dplyr::filter(nchar(ENTREZ_GENE_ID)>0)
-esets[["GSE71989"]]$ID = rownames(esets[["GSE71989"]])
-
 esets[["GSE71989"]]$variance = rowVars(as.matrix(esets[["GSE71989"]]))
 esets[["GSE71989"]] = esets[["GSE71989"]] %>%
   mutate(ID = rownames(esets[["GSE71989"]])) %>%
@@ -541,7 +538,6 @@ fdata101462 = fData(GEOsets$GSE101462) %>%
   dplyr::select(ID, ENTREZ_GENE_ID = Entrez_Gene_ID) %>%
   dplyr::filter(!grepl("///", ENTREZ_GENE_ID)) %>%
   dplyr::filter(nchar(ENTREZ_GENE_ID)>0)
-
 esets[["GSE101462"]]$variance = rowVars(as.matrix(esets[["GSE101462"]]))
 esets[["GSE101462"]] = esets[["GSE101462"]] %>%
   mutate(ID = rownames(esets[["GSE101462"]])) %>%
@@ -560,7 +556,6 @@ fdata91035 = fData(GEOsets$GSE91035) %>%
   dplyr::select(ID, ENTREZ_GENE_ID = LOCUSLINK_ID) %>%
   dplyr::filter(!grepl("///", ENTREZ_GENE_ID)) %>%
   dplyr::filter(nchar(ENTREZ_GENE_ID)>0)
-
 esets[["GSE91035"]]$variance = rowVars(as.matrix(esets[["GSE91035"]]))
 esets[["GSE91035"]] = esets[["GSE91035"]] %>%
   mutate(ID = rownames(esets[["GSE91035"]])) %>%
@@ -579,7 +574,6 @@ fdata77858 = fData(GEOsets$GSE77858) %>%
   dplyr::select(ID, ENTREZ_GENE_ID = GENE) %>%
   dplyr::filter(!grepl("///", ENTREZ_GENE_ID)) %>%
   dplyr::filter(nchar(ENTREZ_GENE_ID)>0)
-
 esets[["GSE77858"]]$variance = rowVars(as.matrix(esets[["GSE77858"]]))
 esets[["GSE77858"]] = esets[["GSE77858"]] %>%
   mutate(ID = rownames(esets[["GSE77858"]])) %>%
@@ -600,7 +594,14 @@ for(i in 1:length(esets)) {
 }; rm(i)
 names(na_esets) = names(GEOsets)
 na_esets # No NA values exist in the expression files
+rm(na_esets)
 
+## Save intermediate files ##
+saveRDS(GEOsets, "intermediate_files/GSE_microarrays/GEOsets.RDS")
+saveRDS(esets, "intermediate_files/GSE_microarrays/esets_raw.RDS")
+saveRDS(filt_pdata, "intermediate_files/GSE_microarrays/filt_pdata.RDS")
+saveRDS(pdata, "intermediate_files/GSE_microarrays/pdata_raw.RDS")
+openxlsx::write.xlsx(full_pdata, "DGEA/Pheno.xlsx", overwrite = TRUE)
 
 
 ## ------------------------------------------------------------------------------------ ##
