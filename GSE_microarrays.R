@@ -16,7 +16,7 @@ library(impute)
 
 ##### Downloading data #####
 # Vector with datasets to download from GEO
-datasets = c("GSE143754", "GSE61166", "GSE71989", "GSE101462", "GSE91035", "GSE77858")
+datasets = c("GSE143754", "GSE61166", "GSE71989", "GSE101462", "GSE77858")
 
 # Download data
 GEOsets = list()
@@ -227,45 +227,6 @@ filt_pdata$GSE101462$Tissue_type = factor(x = filt_pdata$GSE101462$Tissue_type,
                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
 # NOTE: no age or gender information was provided
 
-## -- GSE91035 -- ##
-# GEO: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE91035
-# Paper: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5831917/
-# Comments:
-#   - 50 samples
-#     - 8 normal samples
-#     - 15 adjacent benign samples
-#     - 27 PDAC samples
-#### NOTE: samples are pancreatitis, not Chronic Pancreatitis
-
-# Select informative data only
-filt_pdata[["GSE91035"]] = pdata$GSE91035 %>%
-  dplyr::select(GEO_accession = geo_accession,
-                Patient_ID = title,
-                Platform = platform_id,
-                Tissue_type = "disease state:ch1")
-
-# Change Tissue_type to chronic pancreatitis and normal
-for (i in 1:length(filt_pdata$GSE91035$Tissue_type)) {
-  if (filt_pdata$GSE91035$Tissue_type[i] == "Chronic Pancreatitis") {
-    filt_pdata$GSE91035$Tissue_type[i] = "chronic_pancreatitis"
-  } 
-  if (filt_pdata$GSE91035$Tissue_type[i] %in% c("normal", "benign")) {
-    filt_pdata$GSE91035$Tissue_type[i] = "non_tumor"
-  } 
-  if (filt_pdata$GSE91035$Tissue_type[i] == "PDAC") {
-    filt_pdata$GSE91035$Tissue_type[i] = "tumor"
-  } 
-}; rm(i)
-
-# Clear Patient ID
-filt_pdata$GSE91035$Patient_ID = gsub(", .*[aA-zZ]", "", filt_pdata$GSE91035$Patient_ID)
-
-# Transform to factors with consistent universal levels
-filt_pdata$GSE91035$Tissue_type = factor(x = filt_pdata$GSE91035$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
-# NOTE: no age or gender information was provided
-
 ## -- GSE77858 -- ##
 # GEO: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE77858
 # Paper: -
@@ -322,16 +283,13 @@ pdata71989 = filt_pdata$GSE71989 %>%
 pdata101462 = filt_pdata$GSE101462 %>%
   dplyr::select(GEO_accession, Tissue_type) %>%
   dplyr::mutate(Study = "GSE101462")
-pdata91035 = filt_pdata$GSE91035 %>%
-  dplyr::select(GEO_accession, Tissue_type) %>%
-  dplyr::mutate(Study = "GSE91035")
 pdata77858 = filt_pdata$GSE77858 %>%
   dplyr::select(GEO_accession, Tissue_type) %>%
   dplyr::mutate(Study = "GSE77858")
 
-full_pdata = rbind(pdata143754, pdata61166, pdata71989, pdata101462, pdata91035, pdata77858)
+full_pdata = rbind(pdata143754, pdata61166, pdata71989, pdata101462, pdata77858)
 rownames(full_pdata) = full_pdata$GEO_accession
-rm(pdata143754, pdata61166, pdata71989, pdata101462, pdata91035, pdata77858)
+rm(pdata143754, pdata61166, pdata71989, pdata101462, pdata77858)
 table(full_pdata$Tissue_type)
 
 ## ---------------------------
@@ -519,6 +477,7 @@ esets[["GSE61166"]] = esets[["GSE61166"]] %>%
   as.data.frame() %>%
   dplyr::select(-variance)
 rm(blastn, mapped_blastn, mapped_blastn_filt)
+esets[["GSE61166"]]$ENTREZ_GENE_ID = as.integer(esets[["GSE61166"]]$ENTREZ_GENE_ID)
 
 # GSE71989
 fdata71989 = fData(GEOsets$GSE71989) %>%
@@ -537,6 +496,7 @@ esets[["GSE71989"]] = esets[["GSE71989"]] %>%
   as.data.frame() %>%
   dplyr::select(-variance)
 rm(fdata71989)
+esets[["GSE71989"]]$ENTREZ_GENE_ID = as.integer(esets[["GSE71989"]]$ENTREZ_GENE_ID)
 
 # GSE101462
 fdata101462 = fData(GEOsets$GSE101462) %>%
@@ -555,24 +515,6 @@ esets[["GSE101462"]] = esets[["GSE101462"]] %>%
   as.data.frame() %>%
   dplyr::select(-variance)
 rm(fdata101462)
-
-# GSE91035
-fdata91035 = fData(GEOsets$GSE91035) %>%
-  dplyr::select(ID, ENTREZ_GENE_ID = LOCUSLINK_ID) %>%
-  dplyr::filter(!grepl("///", ENTREZ_GENE_ID)) %>%
-  dplyr::filter(nchar(ENTREZ_GENE_ID)>0)
-esets[["GSE91035"]]$variance = rowVars(as.matrix(esets[["GSE91035"]]))
-esets[["GSE91035"]] = esets[["GSE91035"]] %>%
-  mutate(ID = rownames(esets[["GSE91035"]])) %>%
-  inner_join(fdata91035) %>%
-  dplyr::select(-ID) %>%
-  dplyr::select(ENTREZ_GENE_ID, everything()) %>%
-  group_by(ENTREZ_GENE_ID) %>%
-  arrange(desc(variance)) %>%
-  slice_head(n = 1) %>%
-  as.data.frame() %>%
-  dplyr::select(-variance)
-rm(fdata91035)
 
 # GSE77858
 fdata77858 = fData(GEOsets$GSE77858) %>%
@@ -608,10 +550,10 @@ saveRDS(pdata, "intermediate_files/GSE_microarrays/pdata_raw.RDS")
 openxlsx::write.xlsx(full_pdata, "DGEA/Pheno.xlsx", overwrite = TRUE)
 
 
+## ------------------------------------ ##
+## ------------------------------------ ##
+## ------------------------------------ ##
 
-## ------------------------------------------------------------------------------------ ##
-## ------------------------------------------------------------------------------------ ##
-## ------------------------------------------------------------------------------------ ##
 
 
 ##### z-score-transformation #####
