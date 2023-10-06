@@ -1,0 +1,189 @@
+Search details: ("pancreatitis"[MeSH Terms] OR pancreatitis[All Fields]) AND "Homo sapiens"[porgn] AND "Expression profiling by array"[Filter]
+
+# ------------------------------------------------------------------------------------------------- #
+
+1. ERAP2 is a novel target involved in autophagy and activation of pancreatic stellate cells via unfolded protein response signaling pathway
+(Submitter supplied) Pancreatic ductal adenocarcinoma (PDAC) is characterized by excessive desmoplasia and autophagy-dependent tumorigenic growth. Pancreatic stellate cells (PSCs) as a predominant stromal cell type play a critical role in PDAC biology. Autophagy facilitates PSC activation. However, the mechanism remains unknown. To investigate the mechanism of autophagy in PSC activation, gene expression profiles between patient-derived PSCs from pancreatic cancer and chronic pancreatitis were compared using a gene expression microarray. more...
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL21185 4 Samples
+FTP download: GEO (TXT) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE172nnn/GSE172168/
+Series		Accession: GSE172168	ID: 200172168
+
+2. Transcriptome profiling of Benign and Malignant Pancreatic Headmass
+(Submitter supplied) Microarray was used to find out the differentially expressed genes  in Benign and Malignant Pancreatic Headmass Resulting genes could be further used to understand the disease as well as to identify transcriptomic biomarker.
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL17586 26 Samples
+FTP download: GEO (CEL) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE143nnn/GSE143754/
+Series		Accession: GSE143754	ID: 200143754
+
+3. Gene expression of endothelial cells isolated from pancreatic cancer tissues and from chronic pancreatitis tissues
+(Submitter supplied) Endothelial cells existed in the cancer tissue have unique biological characteristics that are different from those found in the noncancerous tissue of the same organ. In order to investigate molecular mechanisms involved in the unique biological phenotypes of endothelial cells in the cancer tissue, we compared gene expression profiles of endothelial cells isolated from pancreatic cancer tissues with those from chronic pancreatitis tissues.
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL17077 6 Samples
+FTP download: GEO (TXT, XLSX) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE151nnn/GSE151945/
+Series		Accession: GSE151945	ID: 200151945
+
+4. Disease associated fibroblasts from various pancreatic disorders exhibit subtype specific genetic profile [RNA]
+(Submitter supplied) Currently it is unknown whether activation of recruited or resident pancreatic fibroblasts, including pancreatic stellate cells activation, create a common “fibroblast-activated phenotype” indistinguishable from their associated-diseased microenvironment . Using a combination of microRNA and mRNA profiling of fibroblasts isolated from pancreatic ductal adenocarcinoma (PDAC), chronic pancreatitis (CP), periampullary cancer (PAT) and areas of histologically normal pancreas, followed by comprehensive validation, we show that activated fibroblasts derived from different pancreatic disease types are considerably distinct.
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL17586 27 Samples
+FTP download: GEO (CEL) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE123nnn/GSE123375/
+Series		Accession: GSE123375	ID: 200123375
+
+5. Expression data in patients with familial (FCS) and multifactorial chylomicronemia (MCM)
+(Submitter supplied) FCS and MCM appear highly similar disorders. However, they importantly differ in term of risk and response to treatments. Some sets of genes might be up or down regulated in both disorders and could partly explain those differences. We used microarrays to explore gene expression patterns in FCS and MCM patients to identify potential targets that can be selected for protein quantification and functional studies.
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL16686 62 Samples
+FTP download: GEO (CEL) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE149nnn/GSE149607/
+Series		Accession: GSE149607	ID: 200149607
+
+6. Role of BAP1 in pancreatic cancer (PrimeView)
+(Submitter supplied) Transcriptional profile of PANC1 cells with CRISPR/Cas9 mediated deletion of BAP1 We found that BAP1 (BRCA1 Associated Protein-1) shows loss of heterozygosity in over 25% of pancreatic cancer patients and functions as tumor suppressor. Conditional deletion of Bap1 in murine pancreas led to genomic instability, accumulation of DNA damage, and an inflammatory response that evolved to pancreatitis with full penetrance. more...
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL15207 8 Samples
+FTP download: GEO (CEL, CHP) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE120nnn/GSE120078/
+Series		Accession: GSE120078	ID: 200120078
+
+7. Skeletal Muscle Fibrosis in Pancreatic Cancer Patients with Respect to Survival
+(Submitter supplied) Skeletal muscle wasting is a devastating consequence of cancer that may be responsible for nearly 30% of cancer-related deaths. In addition to muscle atrophy, we have identified significant muscle fiber damage and replacement of muscle with fibrotic tissue in rectus abdominis muscle biopsies from cachectic pancreatic ductal adenocarcinoma (PDAC) patients that associates with poor survival. Transcriptional profiling of muscle harvested from these same patients supported these findings by identifying gene clusters related to wounding, inflammation and cellular response to TGF-B upregulated in cachectic PDAC patients compared with non-cancer controls. more...
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL17930 46 Samples
+FTP download: GEO (CEL) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE130nnn/GSE130563/
+Series		Accession: GSE130563	ID: 200130563
+
+8. Transcriptome as marker for nutrition-related health: added value of time course analyses during challenge tests before and after energy restriction
+(Submitter supplied) Phenotypic flexibility is used as a measure for health and can be studied during nutritional challenge tests. Changes in gene expression are early markers and give insight into mechanisms. Energy restriction (ER) has a variety of beneficial health effects and can be used to investigate different health states to study postprandial changes during challenge tests. Objective: We aimed to determine the postprandial effects of a 20% ER diet on whole genome expression profiles of peripheral blood mononuclear cells (PBMCs). more...
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL11532 1231 Samples
+FTP download: GEO (CEL) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE88nnn/GSE88794/
+Series		Accession: GSE88794	ID: 200088794
+
+9. Microarray gene-expression data to validate a 17-gene biomarker obtained from excessive meta-analysis to test its PDAC specificity in the presence of pancreatitis tissues.
+(Submitter supplied) Clinical signs and radiographic findings of PDAC and pancreatitis are often indistinguishable, highlighting the need of a PDAC biomarker to be insensitive to pancreatitis. Therefore we validated a biomarker signature of 17-genes in this gene expression data containing PDAC, non-tumor pancreatic and pancreatitis of fresh-frozen and formalin-fixed paraffin-embedded tissues.
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL10558 20 Samples
+FTP download: GEO (TXT) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE101nnn/GSE101462/
+Series		Accession: GSE101462	ID: 200101462
+
+10. The gene expression signatures of human normal, benign and PDAC pancreatic tisssues.
+(Submitter supplied) To study the gene profile of 8 normal, 15 adjacent benign  and 27 PDAC pancreatic tissues of human, data was generated with Agilent G2565CA arrays. Results provide a global profile of over 56,000 genes in human normal, benign and tumorous pancreatic tissues, and comparison of the differentially expressed genes among these 3 groups.
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL22763 50 Samples
+FTP download: GEO (TXT) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE91nnn/GSE91035/
+Series		Accession: GSE91035	ID: 200091035
+
+11. Acute Appendicitis: Transcript Profiling of blood identifies promising biomarkers and potential underlying processes
+(Submitter supplied) Background: The diagnosis of acute appendicitis can be surprisingly difficult without computed tomography, which carries significant radiation exposure. Genome-wide expression profiling was applied to whole blood RNA of acute appendicitis patients versus patients with other abdominal disorders, in order to identify biomarkers of appendicitis. From a large cohort of emergency patients, a discovery set of patients with surgically confirmed appendicitis, or abdominal pain from other causes, was identified. more...
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL10558 40 Samples
+FTP download: GEO (IDAT, TXT) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE83nnn/GSE83091/
+Series		Accession: GSE83091	ID: 200083091
+
+12. Molecular subtypes in pancreatic adenocarcinoma
+(Submitter supplied) This SuperSeries is composed of the SubSeries listed below.
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platforms: GPL6480 GPL7264 114 Samples
+FTP download: GEO (TXT) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE77nnn/GSE77859/
+Series		Accession: GSE77859	ID: 200077859
+
+13. Molecular subtypes in pancreatic adenocarcinoma [tumors, normal and pancreatitis]
+(Submitter supplied) The goal of the study was to examine the transcriptional profile of pancreatic tumors to identify molecular subtypes in order to develop validated clinically useful gene expression signature with the potential to guide therapy decision.  Tissue was obtained by snap freezing in liquid nitrogen as soon as removed.   All tissue samples were stored at -80C.  Samples were embedded in OCT and a 4ug section was taken for H/E staining. more...
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL7264 85 Samples
+FTP download: GEO (TXT) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE77nnn/GSE77858/
+Series		Accession: GSE77858	ID: 200077858
+
+14. Transcriptome profile of peripheral blood from pancreatic ductal adenocarcinoma patients
+(Submitter supplied) Analysis of expression profile of peripheral blood from pancreatic ductal adenocarcinoma patients RNA expression profile of peripheral blood from pancreatic ductal adenocarcinoma patients
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL10558 50 Samples
+FTP download: GEO (TXT) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE74nnn/GSE74629/
+Series		Accession: GSE74629	ID: 200074629
+
+15. The gene expression of normal pancreatic and PDAC tisssues.
+(Submitter supplied) Expression profiling of 8 normal pancreatic and 14 PDAC tissues. Data was generated from Affymetrix arrays. Results provide a global profile of over 50,000 genes in normal and tumorous tissues, and comparison of the differentially expressed genes between the normal and tumor groups.
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL570 22 Samples
+FTP download: GEO (CEL, CHP) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE71nnn/GSE71989/
+Series		Accession: GSE71989	ID: 200071989
+
+16. Global mRNA/LncRNA expression analysis of pancreatic tumors causing type3C Diabetes Mellitus
+(Submitter supplied) Pancreatic tumors with small size can cause type3C Diabetes Mellitus (PCA-DM) but the mechanism is unknown. In this study we aimed at revealing the mRNA and long noncoding RNA (LncRNA) expression patterns of pancreatic tumors that triggered PCA-DM. Four pancreatic tumors from patients with PCA-DM (A1-A4), four pancreatic tumors from patients without PCA-DM (B1-B4), and four pancreatic tissues from patients with pancreatitis were individually profiled with Agilent microarrays(Arraystar Human LncRNA Array v3.0).
+Organism:	Homo sapiens
+Type:		Expression profiling by array; Non-coding RNA profiling by array
+Platform: GPL16956 12 Samples
+FTP download: GEO (TXT) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE61nnn/GSE61166/
+Series		Accession: GSE61166	ID: 200061166
+
+17. SBV - Gene Expression Profiles of Lung Cancer Tumors - Adenocarcinomas and Squamous Cell Carcinomas
+(Submitter supplied) This dataset encompassing the profiles of 150 lung cancer tumors was developed to serve as test dataset in the SBV IMPROVER Diagnostic Signature Challenge (sbvimprover.com). The aim of this subchallenge was to verify that it is possible to extract a robust diagnostic signature from gene expression data that can identify stages of different types of lung cancer. Participants were asked to develop and submit a classifier that can stratify lung cancer patients in one of four groups – Stage 1 of Adenocarcinoma (AC Stage 1), Stage 2 of Adenocarcinoma (AC Stage 2), Stage 1 of Squamous cell carcinoma (SCC Stage 1) or Stage 2 of Squamous cell carcinoma (SCC Stage 2). more...
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL570 150 Samples
+FTP download: GEO (CEL) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE43nnn/GSE43580/
+Series		Accession: GSE43580	ID: 200043580
+
+18. Long noncoding intronic RNAs are differentially expressed in primary and metastatic pancreatic cancer
+(Submitter supplied) Pancreatic ductal adenocarcinoma (PDAC) is known by its aggressiveness and lack of effective therapeutic options. Thus, improvement in current knowledge of molecular changes associated with pancreatic cancer is urgently needed to explore novel venues of diagnostics and treatment of this dismal disease. While there is mounting evidence that long noncoding RNAs (ncRNAs) transcribed from intronic and intergenic regions of the human genome may play different roles in the regulation of gene expression in normal and cancer cells, their expression pattern and biological relevance in pancreatic cancer is currently unknown. more...
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL3985 38 Samples
+FTP download: GEO ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE30nnn/GSE30134/
+Series		Accession: GSE30134	ID: 200030134
+
+19. Human postmortem hippocampus: Major depressive disorder  (MDD) vs. Control
+(Submitter supplied) We examined the genetic profile of postmortem brain (hippocampal) samples; 15 brains from patients diagnosed with MDD were matched to brains from healthy subjects based on gender, race and age.  Gene expression profiles in the dentate gyrus and CA1 subregions of the hippocampus were assessed by cDNA hybridization to 48K human HEEBO whole genome microarrays (Microarray, Inc).
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL10907 30 Samples
+FTP download: GEO (GPR, TXT) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE24nnn/GSE24095/
+Series		Accession: GSE24095	ID: 200024095
+
+20. Gene expression analysis of pancreatic cancer associated fibroblasts
+(Submitter supplied) Gene expression analysis of pancreatic cancer associated fibroblasts and control fibroblasts To identify signaling pathways important in tumor-stromal cell interactions, we performed gene expression profiling on pancreatic cancer associated fibroblast cultures and control fibroblast cultures using Affymetrix Exon arrays.
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Platform: GPL5188 12 Samples
+FTP download: GEO (CEL) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE21nnn/GSE21440/
+Series		Accession: GSE21440	ID: 200021440
+
+21. BI Human Reference Epigenome Mapping Project
+(Submitter supplied) The NIH Roadmap Epigenomics Mapping Consortium aims to produce a public resource of epigenomic maps for stem cells and primary ex vivo tissues selected to represent the normal counterparts of tissues and organ systems frequently involved in human disease.  Characterization of the reference epigenome in humans by use of ChIP-Seq in a diverse panel of ES cells, tissue stem cells, reprogrammed stem cells, primary cells and tissues   **************** For data usage terms and conditions, please refer to: http://www.drugabuse.gov/funding/funding-opportunities/nih-common-fund/epigenomics-data-access-policies **************** 
+Project: Roadmap Epigenomics
+Organism:	Homo sapiens
+Type:		Genome binding/occupancy profiling by high throughput sequencing; Expression profiling by array
+4 related Platforms 633 Samples
+FTP download: GEO (BAM, BED, CEL, WIG) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE17nnn/GSE17312/
+SRA Run Selector: https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA34535
+Series		Accession: GSE17312	ID: 200017312
+
+22. Multiple Salivary Biomarkers for Early Detection of Pancreatic Cancer
+(Submitter supplied) Pancreatic cancer is the fourth leading cause of cancer death. Lack of early detection technology for pancreatic cancer invariably leads to a typical clinical presentation of incurable disease at initial diagnosis. Oral fluid (saliva) meets the demand for non-invasive, accessible, and highly efficient diagnostic medium. The level of salivary analytes, such as mRNA and microflora, vary upon disease onset; thus possess valuable signatures for early detection and screening. more...
+Organism:	Homo sapiens
+Type:		Expression profiling by array
+Dataset: GDS4100 Platform: GPL570 24 Samples
+FTP download: GEO (CEL) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE14nnn/GSE14245/
+Series		Accession: GSE14245	ID: 200014245
+
+23. Saliva of pre-treatment pancreatic cancer patients
+Analysis of saliva supernatant from pancreatic cancer patients and healthy subjects. Oral fluid (saliva) meets the demand for non-invasive, accessible, and highly efficient diagnostic medium. Results provide insight into salivary biomarkers for detection of pancreatic cancer.
+Organism:	Homo sapiens
+Type:		Expression profiling by array, count, 2 disease state sets
+Platform: GPL570 Series: GSE14245 24 Samples
+FTP download: GEO (CEL) ftp://ftp.ncbi.nlm.nih.gov/geo/datasets/GDS4nnn/GDS4100/
+DataSet		Accession: GDS4100	ID: 4100

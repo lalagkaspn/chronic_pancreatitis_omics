@@ -1,0 +1,91 @@
+("pancreatitis"[MeSH Terms] OR pancreatitis[All Fields]) AND "Homo sapiens"[porgn] AND "Expression profiling by high throughput sequencing"[Filter]
+
+# ------------------------------------------------------------------------------------------------- #
+
+1. Digital spatial profiling of pancreatic ductal adenocarcinoma, acinar ductal metaplasia and adjacent normal pancreas tissue
+(Submitter supplied) Pancreatic ductal adenocarcinoma (PDAC) is the most important histological subtype of pancreatic cancer, accounting for approximately 90% of all pancreatic cancers.Acinar to ductal metaplasia (ADM) is a recently recognized, yet less well-studied, precursor lesion of PDAC developed in the setting of chronic pancreatitis. Through digital spatial mRNA profiling, we compared ADM and adjacent PDAC tissues from patient samples to unveil the bridging genes, bridging signaling pathway and bridging molecular function during the malignant transformation of pancreatitis.
+Organism:	Homo sapiens
+Type:		Expression profiling by high throughput sequencing
+Platform: GPL18573 48 Samples
+FTP download: GEO (XLSX) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE208nnn/GSE208536/
+Series		Accession: GSE208536	ID: 200208536
+
+2. Gene Expression Profiling of Acute Pancreatitis
+(Submitter supplied) Peripheral blood was collected from 87 patients with acute pancreatitis (AP) of varying severity (Mild=57, Moderately-Severe=20, Severe=10) within 24 hours of presentation to the hospital and from 32 healthy controls. RNA-Seq was performed to identify changes in expression in severe AP cf. mild, moderately-severe, and healthy controls.
+Organism:	Homo sapiens
+Type:		Expression profiling by high throughput sequencing
+Platform: GPL16791 119 Samples
+FTP download: GEO (TXT) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE194nnn/GSE194331/
+Series		Accession: GSE194331	ID: 200194331
+
+3. Single-cell sequencing unveils distinct immune microenvironment in human chronic pancreatitis
+(Submitter supplied) Purpose: Chronic pancreatitis (CP) is considered an irreversible fibroinflammatory pancreatic disease with no active FDA approved therapy. Due to difficulty in accessing pancreas tissues, little is known about local immune responses in human CP. Here we attempted to uncover the disease-specific immune responses in pancreata from two different etiologies of CP (hereditary and idiopathic CP) compared with those from non-diseased controls by using CITE-seq and scTCR-seq. more...
+Organism:	Homo sapiens
+Type:		Expression profiling by high throughput sequencing; Other
+Platform: GPL20301 34 Samples
+FTP download: GEO (CSV, H5) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE165nnn/GSE165045/
+SRA Run Selector: https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA693029
+Series		Accession: GSE165045	ID: 200165045
+
+4. Transcriptional alterations in dorsolateral prefrontal cortex and nucleus accumbens implicate neuroinflammation and synaptic remodeling in opioid use disorder
+(Submitter supplied) Transcriptional alterations in dorsolateral prefrontal cortex and nucleus accumbens implicate neuroinflammation and synaptic remodeling in opioid use disorder. Transcriptomic profile of 20 control subjects and 20 OUD subjects in brain region DLPFC and NAC
+Organism:	Homo sapiens
+Type:		Expression profiling by high throughput sequencing
+Platform: GPL18573 80 Samples
+FTP download: GEO (CSV) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE174nnn/GSE174409/
+SRA Run Selector: https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA729761
+Series		Accession: GSE174409	ID: 200174409
+
+5. Human stem cell-derived pancreatic acini-like and duct-like organoids demonstrate lineage-specific differences to oncogene activation
+(Submitter supplied) The exocrine compartment of the pancreas consisting of ducts and acini makes up most of the pancreatic tissue and is the site of origin for pancreatitis and pancreatic ductal adenocarcinoma (PDAC). Our understanding of the initiation and progression of human PDAC is limited because of challenges associated with maintaining acinar cells in culture. Here we report the commitment of human pluripotent stem cells towards pancreatic duct-like and acini-like organoids that express properties of the neonatal exocrine pancreas. more...
+Organism:	Homo sapiens
+Type:		Expression profiling by high throughput sequencing
+Platform: GPL24676 4 Samples
+FTP download: GEO (CSV, MTX, TSV) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE169nnn/GSE169008/
+SRA Run Selector: https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA714896
+Series		Accession: GSE169008	ID: 200169008
+
+6. Pancreatic cancer is marked by complement-high blood monocytes and tumor-associated macrophages
+(Submitter supplied) We utilized biomaterial scaffolds to identify a unique gene expression signature of immune cells in tumor-bearing mice. Single cell RNA sequencing analysis then revealed two distinct macrophage populations that exist at both the primary tumor and systemically in both mice and pancreatic cancer patients, marked by the expression of C1qa, C1qb, and Trem2.
+Organism:	Homo sapiens; Mus musculus
+Type:		Expression profiling by high throughput sequencing
+Platforms: GPL24247 GPL24676 GPL21103 15 Samples
+FTP download: GEO (H5, MTX, TSV) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE158nnn/GSE158356/
+SRA Run Selector: https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA664962
+Series		Accession: GSE158356	ID: 200158356
+
+7. Single cell RNA-seq defines novel heterogeneity within the pancreatic ductal tree
+(Submitter supplied) Lineage tracing using genetically engineered mouse models has become an essential tool for investigating cell-fate decisions of progenitor cells and biology of mature cell types, with respect to physiology and disease progression. To study disease development, an inventory of an organ’s cell types and understanding of physiologic function is paramount. Here, we performed single-cell RNA sequencing to examine heterogeneity of murine pancreatic duct cells, pancreatobiliary cells, and intrapancreatic bile duct cells. more...
+Organism:	Mus musculus; Homo sapiens
+Type:		Expression profiling by high throughput sequencing
+Platforms: GPL21103 GPL20301 8 Samples
+FTP download: GEO (MTX, TSV) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE159nnn/GSE159343/
+SRA Run Selector: https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA668391
+Series		Accession: GSE159343	ID: 200159343
+
+8. Blood extracellular vesicle long RNA sequencing of human blood from pancreatic ductal adenocarcinoma (PDAC), chronic pancreatitis (CP) and healthy individuals
+(Submitter supplied) Blood samples were collected from all participants in 10-mL EDTA-coated Vacutainer tubes. Plasma was separated by centrifugation at 3,000 rpm for 10 min at room temperature (25°C) within 2 h after blood collection and then centrifuged at 13,000 rpm for 10 min at 4°C to remove debris. Isolated plasma samples were stored at -80°C until use. EV RNA were isolated by affinity-based binding to spin columns using an exoRNeasy Serum/Plasma kit (Qiagen, Hilden, Germany). more...
+Organism:	Homo sapiens
+Type:		Expression profiling by high throughput sequencing; Non-coding RNA profiling by high throughput sequencing
+Platform: GPL20795 401 Samples
+FTP download: GEO (TXT) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE133nnn/GSE133684/
+SRA Run Selector: https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA552230
+Series		Accession: GSE133684	ID: 200133684
+
+9. Swarm intelligence-enhanced detection of non-small cell lung cancer using tumor-educated platelets
+(Submitter supplied) We report RNA-sequencing data of 779 blood platelet samples, including 402 tumor-educated platelet (TEP) samples collected from patients with non-small cell lung cancer (NSCLC). In addition, we report RNA-sequencing data of blood platelets isolated from 377 individuals without reported cancer, but not excluding individuals with inflammatory conditions. This dataset highlights the ability of TEP RNA-based 'liquid biopsy' diagnostics in patients with NSCLC.
+Organism:	Homo sapiens
+Type:		Expression profiling by high throughput sequencing
+Platform: GPL16791 779 Samples
+FTP download: GEO (TXT, XLSX) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE89nnn/GSE89843/
+SRA Run Selector: https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA353588
+Series		Accession: GSE89843	ID: 200089843
+
+10. Vitamin d receptor-mediated stromal reprogramming suppresses pancreatitis and enhances pancreatic cancer therapy
+(Submitter supplied) The poor clinical outcome in pancreatic ductal adenocarcinoma (PDA) has been attributed to intrinsic resistance to chemotherapy and a growth-permissive tumor microenvironment.  Quiescent pancreatic stellate cells (PSCs) are neuroendocrine, nestin-positive, lipid-accumulating cells whose homologues in the liver are the principal repository of Vitamin A esters.  Upon activation, lipid droplets are lost and via transdifferentiation they become the key cell type responsible for driving the severe desmoplasia that characterizes PDA. more...
+Organism:	Homo sapiens; Mus musculus
+Type:		Expression profiling by high throughput sequencing
+Platforms: GPL11154 GPL13112 17 Samples
+FTP download: GEO (BW) ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE43nnn/GSE43770/
+SRA Run Selector: https://www.ncbi.nlm.nih.gov/Traces/study/?acc=PRJNA187388
+Series		Accession: GSE43770	ID: 200043770
