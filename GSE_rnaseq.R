@@ -69,8 +69,8 @@ for (i in 1:length(filt_pdata$GSE194331$Tissue_type)) {
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE194331$Tissue_type = factor(x = filt_pdata$GSE194331$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor"))
+                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
+                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
 
 # Check overlap of GSE samples with the NCBI raw count dataframe
 length(intersect(filt_pdata$GSE194331$GEO_accession, colnames(GSE194331_raw_counts)[-1])) # 119 --> 100% overlap
@@ -111,7 +111,71 @@ for (i in 1:length(filt_pdata$GSE133684$Tissue_type)) {
 # Add to filt_pdata the CP patient IDs
 cp_patients_ids = setdiff(colnames(GSE133684_tpm), filt_pdata$GSE133684$Patient_ID)[-1]
 cp_data = data.frame(GEO_accession = "", Patient_ID = cp_patients_ids, Platform = "GPL20795", Tissue_type = "chronic_pancreatitis")
-filt_pdata$GSE133684 = rbind(filt_pdata$GSE133684, cp_data) ; rm(cp_patients_ids, cp_data))
+filt_pdata$GSE133684 = rbind(filt_pdata$GSE133684, cp_data) ; rm(cp_patients_ids, cp_data)
+
+# Transform to factors with consistent universal levels
+filt_pdata$GSE133684$Tissue_type = factor(x = filt_pdata$GSE133684$Tissue_type,
+                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
+                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
+
+## ---------------------------
+## Expression data
+## ---------------------------
+
+## GSE194331: convert raw counts to TPM
+
+# Create a TPM matrix
+library(AnnotationHub)
+
+# Create an AnnotationHub object
+ah = AnnotationHub()
+
+# Query for the latest Homo sapiens EnsDb object
+latest_homo_sapiens = query(ah, c("EnsDb", "Homo sapiens")) 
+
+# Print the latest version
+tail(latest_homo_sapiens)
+
+# ID of interest is "AH113665"
+edb = ah[["AH113665"]]
+
+# Get gene data
+genes_data = genes(edb)
+genes_map = data.frame(gene_id = genes_data$gene_id,
+                       entrezID = genes_data$entrezid)
+
+# Get transcript data
+transcripts_data = transcripts(edb)
+transcript_lengths = data.frame(transcript_id = transcripts_data$tx_id,
+                                gene_id = transcripts_data$gene_id,
+                                tx_length = width(transcripts_data)) %>%
+  inner_join(genes_map, by = "gene_id") %>%
+  dplyr::filter(!Gene.Symbol == "") %>%
+  group_by(Gene.Symbol) %>%
+  summarise(longest_transcript_length = max(tx_length, na.rm = TRUE))
+
+# Calculate gene lengths in kilobases
+transcript_lengths$transcript_length_kb = transcript_lengths$longest_transcript_length / 1000
+
+# Map gene lengths to rownames of the counts matrix
+rownames(transcript_lengths) = transcript_lengths$Gene.Symbol
+mapped = transcript_lengths[transcript_lengths$Gene.Symbol %in% 
+                              x_filt$genes$Gene.Symbol,]
+mapped_lengths = mapped$transcript_length_kb
+
+# Calculate counts per kilobase (CPK)
+cpk = x_filt$counts[mapped$Gene.Symbol, ] / mapped_lengths
+# Calculate the sum of CPK values for each sample
+cpk_sum = colSums(cpk)
+
+# Calculate TPM values
+tpm = cpk / cpk_sum * 1e6
+log2tpm = log2(tpm + 1)
+rm(cpk, cpk_sum, keep.exprs, mapped_lengths, ah, edb)
+
+
+
+
 
 
 
