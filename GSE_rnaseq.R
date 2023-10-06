@@ -14,15 +14,15 @@ for (i in 1:length(datasets)){
 GEOsets = unlist(GEOsets)
 names(GEOsets) = datasets; rm(datasets)
 
-## NCBI recently released a workflow that generates RNA-seq count data for all the publicly available RNA-seq data arcivhed by SRA
+## NCBI recently released a workflow that generates RNA-seq count data for all the publicly available RNA-seq data archived by SRA
 ## https://www.ncbi.nlm.nih.gov/geo/info/rnaseqcounts.html --> PAY ATTENTION TO THE LIMITATIONS MENTIONED
-## I downloaded the raw counts for the two datasets from here:
+## We downloaded the raw counts for the two datasets from here:
 ## - GSE194331: https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE194331 (NCBI-generated data --> Series RNA-seq raw counts matrix)
 ## - GSE133684: https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE133684 (NCBI-generated data --> Series RNA-seq raw counts matrix)
 
 ## Load raw counts
-GSE194331_raw_counts = data.table::fread("/Users/panagiotisnikolaoslalagkas/Desktop/chronic_pancreatitis/data/GSE194331_raw_counts_GRCh38.p13_NCBI.tsv")
-GSE133684_raw_counts = data.table::fread("/Users/panagiotisnikolaoslalagkas/Desktop/chronic_pancreatitis/data/GSE133684_raw_counts_GRCh38.p13_NCBI.tsv")
+GSE194331_raw_counts = data.table::fread("data/GSE194331_raw_counts_GRCh38.p13_NCBI.tsv")
+GSE133684_raw_counts = data.table::fread("data/GSE133684_raw_counts_GRCh38.p13_NCBI.tsv")
 
 ## --------- ##
 ## pData
@@ -102,7 +102,7 @@ filt_pdata[["GSE133684"]] = pdata$GSE133684 %>%
 colnames_gse133684 = colnames(GSE133684_raw_counts)[-1]
 GSE133684_cp_samples = setdiff(colnames_gse133684, filt_pdata[["GSE133684"]]$GEO_accession) # empty --> that means that NCBI raw count data frame contains only raw counts for PDAC and healthy samples
 
-## Keep only normals
+## Keep only normal samples
 filt_pdata[["GSE133684"]] = filt_pdata[["GSE133684"]] %>%
   filter(Tissue_type == "healthy")
 

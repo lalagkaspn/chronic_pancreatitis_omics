@@ -1,7 +1,8 @@
 ## This script is used to download and pre-process series (microarrays) from GEO for 
-## patients with Chronic Pancreatitis (normal and CP tissues)
+## patients with chronic pancreatitis (normal and chronic pancreatitis tissues)
 
 library(dplyr)
+library(matrixStats)
 library(GEOquery) # updated
 library(org.Hs.eg.db)
 library(ggplot2)
@@ -12,7 +13,6 @@ library(limma)
 library(openxlsx)
 library(EnhancedVolcano)
 library(impute)
-library(matrixStats)
 
 ##### Downloading data #####
 # Vector with datasets to download from GEO
@@ -597,17 +597,16 @@ na_esets # No NA values exist in the expression files
 rm(na_esets)
 
 ## Save intermediate files ##
-saveRDS(GEOsets, "intermediate_files/GSE_microarrays/GEOsets.RDS")
 saveRDS(esets, "intermediate_files/GSE_microarrays/esets_raw.RDS")
 saveRDS(filt_pdata, "intermediate_files/GSE_microarrays/filt_pdata.RDS")
 saveRDS(pdata, "intermediate_files/GSE_microarrays/pdata_raw.RDS")
 openxlsx::write.xlsx(full_pdata, "DGEA/Pheno.xlsx", overwrite = TRUE)
 
 
-## ------------------------------------------------------------------------------------ ##
-## ------------------------------------------------------------------------------------ ##
-## ------------------------------------------------------------------------------------ ##
 
+## ------------------------------------------------------------------------------------ ##
+## ------------------------------------------------------------------------------------ ##
+## ------------------------------------------------------------------------------------ ##
 
 
 ##### z-score-transformation #####
