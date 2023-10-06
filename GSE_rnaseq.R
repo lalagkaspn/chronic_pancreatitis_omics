@@ -79,7 +79,7 @@ length(intersect(filt_pdata$GSE194331$GEO_accession, colnames(GSE194331_raw_coun
 common_samples_gse194331 = intersect(colnames(GSE194331_raw_counts), filt_pdata$GSE194331$GEO_accession)
 columns_to_keep = c(1, which(colnames(GSE194331_raw_counts) %in% common_samples_gse194331))
 GSE194331_raw_counts = GSE194331_raw_counts[, ..columns_to_keep]
-filt_pdata$GSE194331 = filt_pdata$GSE194331 %>% filter(GEO_accession %in% common_samples_gse194331)
+filt_pdata$GSE194331 = filt_pdata$GSE194331 %>% dplyr::filter(GEO_accession %in% common_samples_gse194331)
 rm(common_samples_gse194331, columns_to_keep)
 
 # GSE133684
@@ -141,8 +141,14 @@ edb = ah[["AH113665"]]
 
 # Get gene data
 genes_data = genes(edb)
-genes_map = data.frame(gene_id = genes_data$gene_id,
-                       entrezID = genes_data$entrezid)
+entrezid_temp = genes_data$entrezid
+
+genes_map = data.frame(gene_id = NA, entrezID = NA)
+for (i in 1:length(entrezid_temp)) {
+  genes_map[i, "gene_id"] = names(entrezid_temp)[i]
+  genes_map[i, "entrezID"] = paste0(entrezid_temp[[i]], collapse = ",")
+  cat(i, "\n")
+} ; rm(i)
 
 # Get transcript data
 transcripts_data = transcripts(edb)
@@ -150,28 +156,48 @@ transcript_lengths = data.frame(transcript_id = transcripts_data$tx_id,
                                 gene_id = transcripts_data$gene_id,
                                 tx_length = width(transcripts_data)) %>%
   inner_join(genes_map, by = "gene_id") %>%
-  dplyr::filter(!Gene.Symbol == "") %>%
-  group_by(Gene.Symbol) %>%
+  dplyr::filter(!entrezID == "") %>%
+  group_by(entrezID) %>%
   summarise(longest_transcript_length = max(tx_length, na.rm = TRUE))
 
 # Calculate gene lengths in kilobases
 transcript_lengths$transcript_length_kb = transcript_lengths$longest_transcript_length / 1000
 
+# Each row may contain multiple entrezIDs --> split them into separate rows --> find the longest transcript length for duplicated entrezIDs
+temp = stringr::str_split_fixed(transcript_lengths$entrezID, ",", n = Inf)
+transcript_lengths = cbind(transcript_lengths[, 2], temp)
+transcript_lengths = reshape2::melt(transcript_lengths, "longest_transcript_length", colnames(transcript_lengths)[2:ncol(transcript_lengths)])
+transcript_lengths = transcript_lengths %>% dplyr::select(entrezID = value, longest_transcript_length) %>% distinct()
+transcript_lengths = transcript_lengths[-which(transcript_lengths$entrezID == ""), ] ; rownames(transcript_lengths) = NULL
+transcript_lengths = transcript_lengths %>% 
+  group_by(entrezID) %>%
+  summarise(longest_transcript_length = max(longest_transcript_length, na.rm = TRUE))
+
 # Map gene lengths to rownames of the counts matrix
-rownames(transcript_lengths) = transcript_lengths$Gene.Symbol
-mapped = transcript_lengths[transcript_lengths$Gene.Symbol %in% 
-                              x_filt$genes$Gene.Symbol,]
-mapped_lengths = mapped$transcript_length_kb
+transcript_lengths = as.data.frame(transcript_lengths)
+rownames(transcript_lengths) = transcript_lengths$entrezID
+transcript_lengths_in_raw_counts = transcript_lengths %>% dplyr::filter(entrezID %in% GSE194331_raw_counts$GeneID)
+transcript_lengths_in_raw_counts$entrezID = as.integer(transcript_lengths_in_raw_counts$entrezID)
+transcript_lengths_in_raw_counts = transcript_lengths_in_raw_counts %>% arrange(entrezID)
+GSE194331_raw_counts = GSE194331_raw_counts %>% dplyr::filter(GeneID %in% transcript_lengths_in_raw_counts$entrezID)
+GSE194331_raw_counts = GSE194331_raw_counts %>% dplyr::arrange(GeneID)
 
 # Calculate counts per kilobase (CPK)
-cpk = x_filt$counts[mapped$Gene.Symbol, ] / mapped_lengths
+GSE194331_cpk = data.frame(GSE194331_raw_counts)
+for (i in 1:nrow(GSE194331_cpk)) {
+  gene_temp = GSE194331_cpk[i, "GeneID"]
+  transcript_length = transcript_lengths_in_raw_counts %>% dplyr::filter(entrezID == gene_temp)
+  GSE194331_cpk[i, 2:ncol(GSE194331_cpk)] = GSE194331_cpk[i, 2:ncol(GSE194331_cpk)] / transcript_length$longest_transcript_length
+  cat(i, "\n")
+} ; rm(i, gene_temp, transcript_length)
 # Calculate the sum of CPK values for each sample
-cpk_sum = colSums(cpk)
+GSE194331_cpk_sum = colSums(GSE194331_cpk)
 
 # Calculate TPM values
-tpm = cpk / cpk_sum * 1e6
-log2tpm = log2(tpm + 1)
-rm(cpk, cpk_sum, keep.exprs, mapped_lengths, ah, edb)
+GSE194331_tpm = GSE194331_cpk / GSE194331_cpk_sum * 1e6
+GSE194331_tpm$GeneID = GSE194331_raw_counts$GeneID
+
+rm(GSE194331_cpk, GSE194331_cpk_sum,  ah, edb, temp, transcript_lengths, transcript_lengths_in_raw_counts, transcript_length_kb, transcripts_data, genes_data, genes_map, entrezid_temp)
 
 
 
