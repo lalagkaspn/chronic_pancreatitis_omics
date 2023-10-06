@@ -74,16 +74,16 @@ for (i in 1:length(filt_pdata$GSE143754$Tissue_type)) {
   } 
 }; rm(i)
 
-# Keep only the chronic pancreatitis and non_tumor samples
-filt_pdata[["GSE143754"]] = filt_pdata[["GSE143754"]] %>% filter(Tissue_type %in% c("chronic_pancreatitis", "non_tumor"))
+## NOTE: We keep all samples (including PDAC) because we want to adjust for them in the DGEA between normal and CPs
 
 # Clear patient ID
 filt_pdata[["GSE143754"]]$Patient_ID = gsub("Benign Tissue, Biological Replicate ", "", filt_pdata[["GSE143754"]]$Patient_ID)
+filt_pdata[["GSE143754"]]$Patient_ID = gsub("Malignant Tissue, Biological Replicate ", "", filt_pdata[["GSE143754"]]$Patient_ID)
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE143754$Tissue_type = factor(x = filt_pdata$GSE143754$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor"))
+                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
+                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
 filt_pdata$GSE143754$Gender = factor(x = filt_pdata$GSE143754$Gender,
                                      levels = c("Female","Male"),
                                      labels = c("female","male"))
@@ -110,23 +110,24 @@ filt_pdata[["GSE61166"]] = pdata$GSE61166 %>%
                 Age = "age:ch1",
                 Tissue_type = "disease status:ch1")
 
-# Keep pancreatitis samples
-filt_pdata[["GSE61166"]] = filt_pdata[["GSE61166"]] %>% filter(Tissue_type == "pancreatitis")
-
 # Change Tissue_type to chronic pancreatitis and normal
 for (i in 1:length(filt_pdata$GSE61166$Tissue_type)) {
   if (filt_pdata$GSE61166$Tissue_type[i] == "pancreatitis") {
     filt_pdata$GSE61166$Tissue_type[i] = "chronic_pancreatitis"
   } 
+  if (filt_pdata$GSE61166$Tissue_type[i] == "pancreatic tumor") {
+    filt_pdata$GSE61166$Tissue_type[i] = "tumor"
+  } 
 }; rm(i)
 
 # Clear patient ID
 filt_pdata$GSE61166$Patient_ID = gsub("Pancreatitis_tissues_of_Patient", "", filt_pdata$GSE61166$Patient_ID)
+filt_pdata$GSE61166$Patient_ID = gsub("Pancreatic_tumors_of_Patient", "", filt_pdata$GSE61166$Patient_ID)
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE61166$Tissue_type = factor(x = filt_pdata$GSE61166$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor"))
+                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
+                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
 filt_pdata$GSE61166$Gender = factor(x = filt_pdata$GSE61166$Gender,
                                      levels = c("female","male"),
                                      labels = c("female","male"))
@@ -151,9 +152,6 @@ filt_pdata[["GSE71989"]] = pdata$GSE71989 %>%
                 Platform = platform_id,
                 Tissue_type = "tissue subtype:ch1")
 
-# Keep the normal and chronic pancreatitis samples
-filt_pdata[["GSE71989"]] = filt_pdata[["GSE71989"]] %>% filter(Tissue_type %in% c("CP", "normal pancreatic tissue"))
-
 # Change Tissue_type to chronic pancreatitis and normal
 for (i in 1:length(filt_pdata$GSE71989$Tissue_type)) {
   if (filt_pdata$GSE71989$Tissue_type[i] == "CP") {
@@ -162,16 +160,20 @@ for (i in 1:length(filt_pdata$GSE71989$Tissue_type)) {
   if (filt_pdata$GSE71989$Tissue_type[i] == "normal pancreatic tissue") {
     filt_pdata$GSE71989$Tissue_type[i] = "non_tumor"
   } 
+  if (filt_pdata$GSE71989$Tissue_type[i] == "PDAC") {
+    filt_pdata$GSE71989$Tissue_type[i] = "tumor"
+  } 
 }; rm(i)
 
 # Clear patient ID
 filt_pdata$GSE71989$Patient_ID = gsub(", human normal pancreatic tissue", "", filt_pdata$GSE71989$Patient_ID)
 filt_pdata$GSE71989$Patient_ID = gsub(", human Chronic Pancreatitis tissue", "", filt_pdata$GSE71989$Patient_ID)
+filt_pdata$GSE71989$Patient_ID = gsub(", human PDAC tissue", "", filt_pdata$GSE71989$Patient_ID)
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE71989$Tissue_type = factor(x = filt_pdata$GSE71989$Tissue_type,
-                                         levels = c("chronic_pancreatitis", "non_tumor"),
-                                         labels = c("chronic_pancreatitis", "non_tumor"))
+                                         levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
+                                         labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
 # NOTE: No age or gender information was provided
 
 ## -- GSE101462 -- ##
@@ -196,9 +198,6 @@ filt_pdata[["GSE101462"]] = pdata$GSE101462 %>%
                 Tissue_type = "tissue type:ch1",
                 Tissue_storage = "tissue storage:ch1")
 
-# Keep the normal and chronic pancreatitis samples
-filt_pdata[["GSE101462"]] = filt_pdata[["GSE101462"]] %>% filter(Tissue_type %in% c("pancreatitis", "normal"))
-
 # Change Tissue_type to chronic pancreatitis and normal
 for (i in 1:length(filt_pdata$GSE101462$Tissue_type)) {
   if (filt_pdata$GSE101462$Tissue_type[i] == "pancreatitis") {
@@ -206,6 +205,9 @@ for (i in 1:length(filt_pdata$GSE101462$Tissue_type)) {
   } 
   if (filt_pdata$GSE101462$Tissue_type[i] == "normal") {
     filt_pdata$GSE101462$Tissue_type[i] = "non_tumor"
+  } 
+  if (filt_pdata$GSE101462$Tissue_type[i] == "PDAC") {
+    filt_pdata$GSE101462$Tissue_type[i] = "tumor"
   } 
 }; rm(i)
 
@@ -221,8 +223,8 @@ for (i in 1:length(filt_pdata$GSE101462$Tissue_storage)) {
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE101462$Tissue_type = factor(x = filt_pdata$GSE101462$Tissue_type,
-                                         levels = c("chronic_pancreatitis", "non_tumor"),
-                                         labels = c("chronic_pancreatitis", "non_tumor"))
+                                         levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
+                                         labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
 # NOTE: no age or gender information was provided
 
 ## -- GSE91035 -- ##
@@ -242,9 +244,6 @@ filt_pdata[["GSE91035"]] = pdata$GSE91035 %>%
                 Platform = platform_id,
                 Tissue_type = "disease state:ch1")
 
-# Keep the normal (normal and adjacent benign) and chronic pancreatitis samples
-filt_pdata[["GSE91035"]] = filt_pdata[["GSE91035"]] %>% filter(Tissue_type %in% c("normal", "benign", "Chronic Pancreatitis"))
-
 # Change Tissue_type to chronic pancreatitis and normal
 for (i in 1:length(filt_pdata$GSE91035$Tissue_type)) {
   if (filt_pdata$GSE91035$Tissue_type[i] == "Chronic Pancreatitis") {
@@ -253,6 +252,9 @@ for (i in 1:length(filt_pdata$GSE91035$Tissue_type)) {
   if (filt_pdata$GSE91035$Tissue_type[i] %in% c("normal", "benign")) {
     filt_pdata$GSE91035$Tissue_type[i] = "non_tumor"
   } 
+  if (filt_pdata$GSE91035$Tissue_type[i] == "PDAC") {
+    filt_pdata$GSE91035$Tissue_type[i] = "tumor"
+  } 
 }; rm(i)
 
 # Clear Patient ID
@@ -260,8 +262,8 @@ filt_pdata$GSE91035$Patient_ID = gsub(", .*[aA-zZ]", "", filt_pdata$GSE91035$Pat
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE91035$Tissue_type = factor(x = filt_pdata$GSE91035$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor"))
+                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
+                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
 # NOTE: no age or gender information was provided
 
 ## -- GSE77858 -- ##
@@ -280,9 +282,6 @@ filt_pdata[["GSE77858"]] = pdata$GSE77858 %>%
                 Platform = platform_id,
                 Tissue_type = "morphology:ch2")
 
-# Keep the normal and pancreatitis samples
-filt_pdata[["GSE77858"]] = filt_pdata[["GSE77858"]] %>% filter(Tissue_type %in% c("Panreatitis", "Normal"))
-
 # Change Tissue_type to chronic pancreatitis and normal
 for (i in 1:length(filt_pdata$GSE77858$Tissue_type)) {
   if (filt_pdata$GSE77858$Tissue_type[i] == "Normal") {
@@ -290,6 +289,12 @@ for (i in 1:length(filt_pdata$GSE77858$Tissue_type)) {
   } 
   if (filt_pdata$GSE77858$Tissue_type[i] == "Panreatitis") {
     filt_pdata$GSE77858$Tissue_type[i] = "chronic_pancreatitis"
+  } 
+  if (filt_pdata$GSE77858$Tissue_type[i] == "Pancreatitis") {
+    filt_pdata$GSE77858$Tissue_type[i] = "chronic_pancreatitis"
+  } 
+  if (filt_pdata$GSE77858$Tissue_type[i] == "Tumor") {
+    filt_pdata$GSE77858$Tissue_type[i] = "tumor"
   } 
 }; rm(i)
 
@@ -299,8 +304,8 @@ filt_pdata[["GSE77858"]]$Patient_ID = gsub("PancTuRef vs. ", "", filt_pdata[["GS
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE77858$Tissue_type = factor(x = filt_pdata$GSE77858$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor"))
+                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
+                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
 
 ## -- full_pdata -- ##
 # Keep only information for Study, GEO_accession and Tissue_type

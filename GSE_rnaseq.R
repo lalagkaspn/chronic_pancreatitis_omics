@@ -19,10 +19,11 @@ names(GEOsets) = datasets; rm(datasets)
 ## We downloaded the raw counts for the two datasets from here:
 ## - GSE194331: https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE194331 (NCBI-generated data --> Series RNA-seq raw counts matrix)
 ## - GSE133684: https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE133684 (NCBI-generated data --> Series RNA-seq raw counts matrix)
+## However, chronic pancreatitis raw counts for the GSE133684 are not available --> we download the TPM data from GEO: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133684
 
 ## Load raw counts
 GSE194331_raw_counts = data.table::fread("data/GSE194331_raw_counts_GRCh38.p13_NCBI.tsv")
-GSE133684_raw_counts = data.table::fread("data/GSE133684_raw_counts_GRCh38.p13_NCBI.tsv")
+GSE133684_tpm = data.table::fread("data/GSE133684_TPM_all.txt.gz")
 
 ## --------- ##
 ## pData
@@ -81,7 +82,7 @@ GSE194331_raw_counts = GSE194331_raw_counts[, ..columns_to_keep]
 filt_pdata$GSE194331 = filt_pdata$GSE194331 %>% filter(GEO_accession %in% common_samples_gse194331)
 rm(common_samples_gse194331, columns_to_keep)
 
-# GSE133684 
+# GSE133684
 # GEO: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE133684
 # Paper: https://pubmed.ncbi.nlm.nih.gov/31562239/
 # Comments:
@@ -97,30 +98,20 @@ filt_pdata[["GSE133684"]] = pdata$GSE133684 %>%
                 Platform = platform_id,
                 Tissue_type = "disease state:ch1")
 
-# Samples downloaded through GSE contain only PDAC and healthy (284 + 117 = 401)
-# Therefore, the samples found in the columns of the raw_counts data frame but not in the GSE data are the chronic pancreatitis
-colnames_gse133684 = colnames(GSE133684_raw_counts)[-1]
-GSE133684_cp_samples = setdiff(colnames_gse133684, filt_pdata[["GSE133684"]]$GEO_accession) # empty --> that means that NCBI raw count data frame contains only raw counts for PDAC and healthy samples
-
-## Keep only normal samples
-filt_pdata[["GSE133684"]] = filt_pdata[["GSE133684"]] %>%
-  filter(Tissue_type == "healthy")
-
 # Change Tissue_type to chronic pancreatitis and normal
 for (i in 1:length(filt_pdata$GSE133684$Tissue_type)) {
-  if (filt_pdata$GSE133684$Tissue_type[i] != "healthy") {
-    filt_pdata$GSE133684$Tissue_type[i] = "chronic_pancreatitis"
+  if (filt_pdata$GSE133684$Tissue_type[i] == "PDAC") {
+    filt_pdata$GSE133684$Tissue_type[i] = "tumor"
   } 
   if (filt_pdata$GSE133684$Tissue_type[i] == "healthy") {
     filt_pdata$GSE133684$Tissue_type[i] = "non_tumor"
   } 
 }; rm(i)
 
-## Filter both pdata and raw counts for common samples
-common_samples_GSE133684 = intersect(colnames(GSE133684_raw_counts), filt_pdata$GSE133684$GEO_accession)
-columns_to_keep = c(1, which(colnames(GSE133684_raw_counts) %in% common_samples_GSE133684))
-GSE133684_raw_counts = GSE133684_raw_counts[, ..columns_to_keep]
-filt_pdata$GSE133684 = filt_pdata$GSE133684 %>% filter(GEO_accession %in% common_samples_GSE133684)
-rm(common_samples_GSE133684, columns_to_keep)
+# Add to filt_pdata the CP patient IDs
+cp_patients_ids = setdiff(colnames(GSE133684_tpm), filt_pdata$GSE133684$Patient_ID)[-1]
+cp_data = data.frame(GEO_accession = "", Patient_ID = cp_patients_ids, Platform = "GPL20795", Tissue_type = "chronic_pancreatitis")
+filt_pdata$GSE133684 = rbind(filt_pdata$GSE133684, cp_data) ; rm(cp_patients_ids, cp_data))
+
 
 
