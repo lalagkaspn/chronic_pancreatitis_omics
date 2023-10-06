@@ -15,6 +15,7 @@ library(impute)
 library(matrixStats)
 
 ##### Downloading data #####
+# Vector with datasets to download from GEO
 datasets = c("GSE143754", "GSE61166", "GSE71989", "GSE101462", "GSE91035", "GSE77858")
 
 # Download data
@@ -37,6 +38,9 @@ for(i in 1:length(GEOsets)) {
 names(pdata) = names(GEOsets); rm(i)
 
 ### Keep only necessary pdata
+## - Sample names
+## - Sample type (chronic pancreatitis, normal/non_tumor)
+## - Available demographics (gender, age,)
 filt_pdata = list()
 
 ## -- GSE143754 -- ##
@@ -83,6 +87,7 @@ filt_pdata$GSE143754$Tissue_type = factor(x = filt_pdata$GSE143754$Tissue_type,
 filt_pdata$GSE143754$Gender = factor(x = filt_pdata$GSE143754$Gender,
                                      levels = c("Female","Male"),
                                      labels = c("female","male"))
+# Transform age to numeric
 filt_pdata$GSE143754$Age = as.numeric(filt_pdata$GSE143754$Age)
 
 ## -- GSE61166 -- ##
@@ -105,7 +110,7 @@ filt_pdata[["GSE61166"]] = pdata$GSE61166 %>%
                 Age = "age:ch1",
                 Tissue_type = "disease status:ch1")
 
-# Keep the pancreatitis samples
+# Keep pancreatitis samples
 filt_pdata[["GSE61166"]] = filt_pdata[["GSE61166"]] %>% filter(Tissue_type == "pancreatitis")
 
 # Change Tissue_type to chronic pancreatitis and normal
@@ -125,6 +130,8 @@ filt_pdata$GSE61166$Tissue_type = factor(x = filt_pdata$GSE61166$Tissue_type,
 filt_pdata$GSE61166$Gender = factor(x = filt_pdata$GSE61166$Gender,
                                      levels = c("female","male"),
                                      labels = c("female","male"))
+
+# Transform age to numeric
 filt_pdata$GSE61166$Age = as.numeric(filt_pdata$GSE61166$Age)
 
 ## -- GSE71989 -- ##
@@ -165,7 +172,7 @@ filt_pdata$GSE71989$Patient_ID = gsub(", human Chronic Pancreatitis tissue", "",
 filt_pdata$GSE71989$Tissue_type = factor(x = filt_pdata$GSE71989$Tissue_type,
                                          levels = c("chronic_pancreatitis", "non_tumor"),
                                          labels = c("chronic_pancreatitis", "non_tumor"))
-# No age or gender information was provided
+# NOTE: No age or gender information was provided
 
 ## -- GSE101462 -- ##
 # GEO: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE101462
@@ -182,7 +189,6 @@ filt_pdata$GSE71989$Tissue_type = factor(x = filt_pdata$GSE71989$Tissue_type,
 #### Also, they used different tissue_storage (FF or FFPE) --> how does this affect our analysis?
 
 # Select informative data only
-# No AGE and GENDER information provided
 filt_pdata[["GSE101462"]] = pdata$GSE101462 %>%
   dplyr::select(GEO_accession = geo_accession,
                 Patient_ID = title,
@@ -217,7 +223,7 @@ for (i in 1:length(filt_pdata$GSE101462$Tissue_storage)) {
 filt_pdata$GSE101462$Tissue_type = factor(x = filt_pdata$GSE101462$Tissue_type,
                                          levels = c("chronic_pancreatitis", "non_tumor"),
                                          labels = c("chronic_pancreatitis", "non_tumor"))
-# No age or gender information was provided
+# NOTE: no age or gender information was provided
 
 ## -- GSE91035 -- ##
 # GEO: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE91035
@@ -228,10 +234,8 @@ filt_pdata$GSE101462$Tissue_type = factor(x = filt_pdata$GSE101462$Tissue_type,
 #     - 15 adjacent benign samples
 #     - 27 PDAC samples
 #### NOTE: samples are pancreatitis, not Chronic Pancreatitis
-#### Also, they used different tissue_storage (FF or FFPE) --> how does this affect our analysis?
 
 # Select informative data only
-# No AGE and GENDER information provided
 filt_pdata[["GSE91035"]] = pdata$GSE91035 %>%
   dplyr::select(GEO_accession = geo_accession,
                 Patient_ID = title,
@@ -258,7 +262,7 @@ filt_pdata$GSE91035$Patient_ID = gsub(", .*[aA-zZ]", "", filt_pdata$GSE91035$Pat
 filt_pdata$GSE91035$Tissue_type = factor(x = filt_pdata$GSE91035$Tissue_type,
                                           levels = c("chronic_pancreatitis", "non_tumor"),
                                           labels = c("chronic_pancreatitis", "non_tumor"))
-# No age or gender information was provided
+# NOTE: no age or gender information was provided
 
 ## -- GSE77858 -- ##
 # GEO: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE77858
@@ -268,10 +272,8 @@ filt_pdata$GSE91035$Tissue_type = factor(x = filt_pdata$GSE91035$Tissue_type,
 #     - 77 tumors
 #     - 3 normal samples
 #     - 5 pancraetitis samples
-#### NOTE: samples are pancreatitis, not Chronic Pancreatitis
 
 # Select informative data only
-# No AGE and GENDER information provided
 filt_pdata[["GSE77858"]] = pdata$GSE77858 %>%
   dplyr::select(GEO_accession = geo_accession,
                 Patient_ID = title,
@@ -300,7 +302,7 @@ filt_pdata$GSE77858$Tissue_type = factor(x = filt_pdata$GSE77858$Tissue_type,
                                           levels = c("chronic_pancreatitis", "non_tumor"),
                                           labels = c("chronic_pancreatitis", "non_tumor"))
 
-# full_pdata
+## -- full_pdata -- ##
 # Keep only information for Study, GEO_accession and Tissue_type
 # Useful for QC analysis
 pdata143754 = filt_pdata$GSE143754 %>%
@@ -326,6 +328,9 @@ full_pdata = rbind(pdata143754, pdata61166, pdata71989, pdata101462, pdata91035,
 rownames(full_pdata) = full_pdata$GEO_accession
 rm(pdata143754, pdata61166, pdata71989, pdata101462, pdata91035, pdata77858)
 table(full_pdata$Tissue_type)
+
+# Save pheno data
+openxlsx::write.xlsx(full_pdata, "DGEA/Pheno.xlsx", overwrite = TRUE)
 
 ## ---------------------------
 ## Expression data
@@ -621,9 +626,6 @@ for(i in 1:length(esets)){
 }; rm(i)
 
 ##### Quality Control #####
-
-# Save pheno data
-openxlsx::write.xlsx(full_pdata, "/Users/panagiotisnikolaoslalagkas/Desktop/chronic_pancreatitis/DGEA/Pheno.xlsx", overwrite = TRUE)
 
 # Joining in one expression matrix: original version
 for (i in 1:length(esets)){
