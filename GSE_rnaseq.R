@@ -3,6 +3,7 @@
 
 library(dplyr)
 library(GEOquery) # updated
+library(org.Hs.eg.db)
 
 ##### Downloading data #####
 datasets = c("GSE194331", "GSE133684")
@@ -199,9 +200,17 @@ GSE194331_tpm$GeneID = GSE194331_raw_counts$GeneID
 
 rm(GSE194331_cpk, GSE194331_cpk_sum,  ah, edb, temp, transcript_lengths, transcript_lengths_in_raw_counts, transcript_length_kb, transcripts_data, genes_data, genes_map, entrezid_temp)
 
+## GSE133684_tpm: convert ensembl gene IDs to Entrez Gene IDs
 
-
-
-
-
+## RefSeq to EntrezID reference data frame
+ref = org.Hs.egENSEMBL2EG
+mapped_genes_official = mappedkeys(ref)
+ref_df = as.data.frame(ref[mapped_genes_official]) ; rm(ref, mapped_genes_official)
+ref_df = ref_df %>% dplyr::rename(ENTREZ_GENE_ID = gene_id)
+length(unique(ref_df$ensembl_id)) == length(ref_df$ensembl_id) # FALSE --> duplicates in RefSeq --> remove them
+# remove ensembl_ids that match to more than one entrezID
+duplicated_ensembl = unique(ref_df[which(duplicated(ref_df$ensembl_id)), "ensembl_id"])
+ref_df = ref_df %>% filter(!ensembl_id %in% duplicated_ensembl) ; rm(duplicated_ensembl)
+GSE133684_tpm = left_join(GSE133684_tpm, ref_df, by = c("V1" = "ensembl_id"))
+GSE133684_tpm = GSE133684_tpm %>% dplyr::relocate(ENTREZ_GENE_ID, .before = V1)
 
