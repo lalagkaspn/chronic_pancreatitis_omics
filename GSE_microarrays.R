@@ -549,14 +549,6 @@ saveRDS(filt_pdata, "intermediate_files/GSE_microarrays/filt_pdata.RDS")
 saveRDS(pdata, "intermediate_files/GSE_microarrays/pdata_raw.RDS")
 openxlsx::write.xlsx(full_pdata, "DGEA/Pheno.xlsx", overwrite = TRUE)
 
-
-
-## ------------------------------------ ##
-## ------------------------------------ ##
-## ------------------------------------ ##
-
-
-
 ##### z-score-transformation #####
 # KBZ transformation method ( https:://www.biostars.org/p/283083/ )
 z = list()
@@ -586,17 +578,16 @@ original_exprs = esets[[1]] %>% inner_join(esets[[2]], by = "ENTREZ_GENE_ID") %>
   inner_join(esets[[3]], by = "ENTREZ_GENE_ID") %>%
   inner_join(esets[[4]], by = "ENTREZ_GENE_ID") %>%
   inner_join(esets[[5]], by = "ENTREZ_GENE_ID") %>%
-  inner_join(esets[[6]], by = "ENTREZ_GENE_ID") %>%
   dplyr::select(ENTREZ_GENE_ID, everything())
 
 rows = original_exprs$ENTREZ_GENE_ID
 original_exprs = as.matrix(original_exprs %>% dplyr::select(-ENTREZ_GENE_ID))
-rownames(original_exprs) = rows; rm(rows) # 5526 x 73
+rownames(original_exprs) = rows; rm(rows) # 13,744 x 165
 # Making sure we do not have NAs in any row
 original_exprs = original_exprs[rowSums(is.na(original_exprs)) != ncol(original_exprs), ]
-original_exprs_nonas = na.omit(original_exprs) # 5526 x 73
+original_exprs_nonas = na.omit(original_exprs) # 13,744 x 165
 # Keeping all samples in our full_pdata_filt object
-original_exprs_nonas = original_exprs_nonas[, full_pdata$GEO_accession] # 5526 x 73
+original_exprs_nonas = original_exprs_nonas[, full_pdata$GEO_accession] # 13,744 x 165
 
 # Joining in one expression matrix: z-score normalized version
 for (i in 1:length(z)){
@@ -609,15 +600,14 @@ z_exprs = z[[1]] %>% inner_join(z[[2]], by = "EntrezGene.ID") %>%
   inner_join(z[[3]], by = "EntrezGene.ID") %>%
   inner_join(z[[4]], by = "EntrezGene.ID") %>%
   inner_join(z[[5]], by = "EntrezGene.ID") %>%
-  inner_join(z[[6]], by = "EntrezGene.ID") %>%
   dplyr::select(EntrezGene.ID, everything())
 
 rownames(z_exprs) = z_exprs$EntrezGene.ID
-z_exprs = as.matrix(z_exprs %>% dplyr::select(-EntrezGene.ID)) # 5526 x 73
+z_exprs = as.matrix(z_exprs %>% dplyr::select(-EntrezGene.ID)) # 13,744 x 165
 # Making sure we do not have NAs in any row
 z_exprs = z_exprs[rowSums(is.na(z_exprs)) != ncol(z_exprs), ]
-z_exprs_nonas = na.omit(z_exprs) # 5526 x 73
-z_exprs_nonas = z_exprs_nonas[, full_pdata$GEO_accession] # 5526 x 73
+z_exprs_nonas = na.omit(z_exprs) # 13,744 x 165
+z_exprs_nonas = z_exprs_nonas[, full_pdata$GEO_accession] # 13,744 x 165
 
 # Multidimensional scaling plot: original matrix #####
 original_mds = plotMDS(original_exprs_nonas)
@@ -632,7 +622,7 @@ original_pca$X1 = as.numeric(original_pca$X1)
 original_pca$X2 = as.numeric(original_pca$X2)
 
 original_MDS = ggplot(original_pca, aes(X1, X2, color = Study, shape = Type)) +
-  geom_point(size = 3) +
+  geom_point(size = 3, alpha = 1) +
   scale_color_brewer(palette = "Dark2") +
   theme(plot.title = element_text(face = "bold", size = 27, hjust = 0.5),
         panel.background = element_rect(fill = "white", 
@@ -699,7 +689,7 @@ dev.off()
 # If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
 # then plot 1 will go in the upper left, 2 will go in the upper right, and
 # 3 will go all the way across the bottom.
-#
+
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   library(grid)
   
@@ -748,12 +738,11 @@ dev.off(); rm(m)
 original_eset = as.data.frame(original_exprs_nonas)
 original_boxplot = ggplot(melt(original_eset), aes(x=variable, y=value)) +
   geom_boxplot(outlier.size = 0.4, outlier.shape = 20, outlier.alpha = 0.1,
-               fill = c(rep("cyan", 15),
-                        rep("chartreuse", 4),
-                        rep("orange", 9),
-                        rep("red", 14),
-                        rep("grey", 25),
-                        rep("purple", 6))) +
+               fill = c(rep("cyan", 26),
+                        rep("chartreuse", 12),
+                        rep("orange", 22),
+                        rep("red", 20),
+                        rep("grey", 85))) +
   scale_y_continuous("Expression", limits = c(0,round(max(melt(original_eset)$value)+1)), 
                      breaks = seq(0,round(max(melt(original_eset)$value)+1), 1))+
   theme(plot.title = element_text(face = "bold", size = 27, hjust = 0.5),
@@ -761,7 +750,7 @@ original_boxplot = ggplot(melt(original_eset), aes(x=variable, y=value)) +
                                         colour = "white"),
         panel.grid = element_blank(),
         axis.text.y = element_text(angle = 0, hjust = 1, margin = margin(t = 1, unit = "cm"),
-                                   size = 5),
+                                   size = 14),
         axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 5, 
                                    margin = margin(t = .05, unit = "cm") ),
         axis.title = element_text(angle = 0, hjust = 0.5, margin = margin(t = 1, unit = "cm"),
@@ -778,12 +767,11 @@ dev.off()
 z_eset = as.data.frame(z_exprs_nonas)
 KBZ_boxplot = ggplot(melt(z_eset), aes(x=variable, y=value)) +
   geom_boxplot(outlier.size = 0.4, outlier.shape = 20,  outlier.alpha = 0.1,
-               fill = c(rep("cyan", 15),
-                        rep("chartreuse", 4),
-                        rep("orange", 9),
-                        rep("red", 14),
-                        rep("grey", 25),
-                        rep("purple", 6))) +
+               fill = c(rep("cyan", 26),
+                        rep("chartreuse", 12),
+                        rep("orange", 22),
+                        rep("red", 20),
+                        rep("grey", 85))) +
   scale_y_continuous("Expression", limits = c(0,round(max(melt(z_eset)$value)+1)), 
                      breaks = seq(0,round(max(melt(z_eset)$value)+1), 1))+
   theme(plot.title = element_text(face = "bold", size = 27, hjust = 0.5),
@@ -791,7 +779,7 @@ KBZ_boxplot = ggplot(melt(z_eset), aes(x=variable, y=value)) +
                                         colour = "white"),
         panel.grid = element_blank(),
         axis.text.y = element_text(angle = 0, hjust = 1, margin = margin(t = 1, unit = "cm"),
-                                   size = 5),
+                                   size = 14),
         axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 5, 
                                    margin = margin(t = .05, unit = "cm") ),
         axis.title = element_text(angle = 0, hjust = 0.5, margin = margin(t = 1, unit = "cm"),
@@ -837,10 +825,9 @@ colnames(original_dists) <- NULL
 diag(original_dists) <- NA
 
 ann_colors <- list(
-  Tissue_type = c(chronic_pancreatitis = "deeppink4", non_tumor = "dodgerblue4"),
+  Tissue_type = c(chronic_pancreatitis = "deeppink4", non_tumor = "dodgerblue4", tumor = "gray"),
   Study = c(GSE143754 = "darkseagreen", GSE61166 = "darkorange",
-            GSE71989 = "darkcyan", GSE101462 = "darkred",
-            GSE91035 = "grey", GSE77858 = "darkmagenta")
+            GSE71989 = "darkcyan", GSE101462 = "darkred", GSE77858 = "darkmagenta")
 )
 
 original_heatmap = pheatmap(t(original_dists), col = hmcol,
@@ -857,7 +844,7 @@ original_heatmap = pheatmap(t(original_dists), col = hmcol,
 save_pheatmap_tiff(original_heatmap, "QC/original_heatmap.tif")
 
 # Z-score version
-annotation_for_heatmap = full_pdata_filt[, c("Study", "Tissue_type")]
+annotation_for_heatmap = full_pdata[, c("Study", "Tissue_type")]
 rownames(annotation_for_heatmap) = full_pdata$GEO_accession
 
 z_dists = as.matrix(dist(t(z_exprs_nonas), method = "manhattan"))
@@ -868,10 +855,9 @@ colnames(z_dists) <- NULL
 diag(z_dists) <- NA
 
 ann_colors <- list(
-  Tissue_type = c(chronic_pancreatitis = "deeppink4", non_tumor = "dodgerblue4"),
+  Tissue_type = c(chronic_pancreatitis = "deeppink4", non_tumor = "dodgerblue4", tumor = "gray"),
   Study = c(GSE143754 = "darkseagreen", GSE61166 = "darkorange",
-            GSE71989 = "darkcyan", GSE101462 = "darkred",
-            GSE91035 = "grey", GSE77858 = "darkmagenta")
+            GSE71989 = "darkcyan", GSE101462 = "darkred", GSE77858 = "darkmagenta")
 )
 
 z_heatmap = pheatmap(t(z_dists), col = hmcol,
