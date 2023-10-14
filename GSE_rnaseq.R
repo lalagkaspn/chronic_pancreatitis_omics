@@ -127,19 +127,23 @@ filt_pdata$GSE133684$Tissue_type = factor(x = filt_pdata$GSE133684$Tissue_type,
 # Summary of the counts table
 summary(GSE194331_raw_counts[, 2:5]) # --> needs normalization --> will calculate TPM
 
-## Calculate TPM:
+## To calculate TPM:
 ## 1. Calculate RPK (divide counts with transcript lengths in kB) --> reads per kilobase
 ## 2. Find scaling factor for each sample by summing all the RPK of each sample and divide by 1,000,000
 ## 3. Multiply each value within each sample with that scaling factor --> transcript per million (TPM)
 
-# Add transcript length
+## -- Add transcript length -- ##
 library(AnnotationHub)
+
 # Create an AnnotationHub object
 ah = AnnotationHub()
+
 # Query for the latest Homo sapiens EnsDb object
 latest_homo_sapiens = query(ah, c("EnsDb", "Homo sapiens")) 
+
 # Print the latest version
 tail(latest_homo_sapiens)
+
 # ID of interest is "AH113665"
 edb = ah[["AH113665"]]
 
@@ -163,7 +167,7 @@ transcript_lengths = data.frame(transcript_id = transcripts_data$tx_id,
   group_by(entrezID) %>%
   summarise(longest_transcript_length = max(tx_length, na.rm = TRUE))
 
-# Each row may contain multiple entrezIDs --> split them into separate rows --> keep the longest transcript length for duplicated entrezIDs
+# Each row may contain multiple entrezIDs --> split them into separate rows --> find the longest transcript length for duplicated entrezIDs
 temp = stringr::str_split_fixed(transcript_lengths$entrezID, ",", n = Inf)
 transcript_lengths = cbind(transcript_lengths[, 2], temp)
 transcript_lengths = reshape2::melt(transcript_lengths, "longest_transcript_length", colnames(transcript_lengths)[2:ncol(transcript_lengths)])
@@ -197,3 +201,24 @@ GSE194331_tpm = as.data.frame(GSE194331_tpm)
 GSE194331_tpm$GeneID = GSE194331_raw_counts$GeneID ; GSE194331_tpm = GSE194331_tpm %>% dplyr::relocate(GeneID, .before = GSM5833563)
 
 rm(GSE194331_rpk, ah, edb, temp, transcript_lengths, transcript_lengths_in_raw_counts, transcripts_data, genes_data, genes_map, entrezid_temp, latest_homo_sapiens)
+
+## GSE133684_tpm: convert ensembl gene IDs to Entrez Gene IDs
+
+## RefSeq to EntrezID reference data frame
+ref = org.Hs.egENSEMBL2EG
+mapped_genes_official = mappedkeys(ref)
+ref_df = as.data.frame(ref[mapped_genes_official]) ; rm(ref, mapped_genes_official)
+ref_df = ref_df %>% dplyr::rename(GeneID = gene_id)
+length(unique(ref_df$ensembl_id)) == length(ref_df$ensembl_id) # FALSE --> duplicates in RefSeq --> remove them
+# remove ensembl_ids that match to more than one entrezID
+duplicated_ensembl = unique(ref_df[which(duplicated(ref_df$ensembl_id)), "ensembl_id"])
+ref_df = ref_df %>% filter(!ensembl_id %in% duplicated_ensembl) ; rm(duplicated_ensembl)
+GSE133684_tpm = left_join(GSE133684_tpm, ref_df, by = c("V1" = "ensembl_id"))
+GSE133684_tpm = GSE133684_tpm %>% dplyr::relocate(GeneID, .before = V1)
+GSE133684_tpm$GeneID = as.integer(GSE133684_tpm$GeneID)
+# remove NAs, ensemble gene ID column and arrange by entrezID
+GSE133684_tpm_nonas = GSE133684_tpm %>% 
+  na.omit() %>%
+  as.data.frame() %>%
+  dplyr::select(-V1) %>% 
+  arrange(GeneID)
