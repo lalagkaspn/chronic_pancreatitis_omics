@@ -126,11 +126,11 @@ filt_pdata$GSE61166$Patient_ID = gsub("Pancreatic_tumors_of_Patient", "", filt_p
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE61166$Tissue_type = factor(x = filt_pdata$GSE61166$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
+                                         levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
+                                         labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
 filt_pdata$GSE61166$Gender = factor(x = filt_pdata$GSE61166$Gender,
-                                     levels = c("female","male"),
-                                     labels = c("female","male"))
+                                    levels = c("female","male"),
+                                    labels = c("female","male"))
 
 # Transform age to numeric
 filt_pdata$GSE61166$Age = as.numeric(filt_pdata$GSE61166$Age)
@@ -223,8 +223,8 @@ for (i in 1:length(filt_pdata$GSE101462$Tissue_storage)) {
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE101462$Tissue_type = factor(x = filt_pdata$GSE101462$Tissue_type,
-                                         levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
-                                         labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
+                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
+                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
 # NOTE: no age or gender information was provided
 
 ## -- GSE77858 -- ##
@@ -265,8 +265,8 @@ filt_pdata[["GSE77858"]]$Patient_ID = gsub("PancTuRef vs. ", "", filt_pdata[["GS
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE77858$Tissue_type = factor(x = filt_pdata$GSE77858$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
+                                         levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
+                                         labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
 
 ## -- full_pdata -- ##
 # Keep only information for Study, GEO_accession and Tissue_type
@@ -318,7 +318,7 @@ na_esets
 ## However, GSE77858 has a lot of missing values. 
 ## We remove rows with more than 25% missing values because they will negatively affect imputation
 GEOsets[["GSE101462"]] = GEOsets[["GSE101462"]][rowSums(is.na(GEOsets[["GSE101462"]]@assayData[["exprs"]]))/
-                                                length(colnames(GEOsets[["GSE101462"]]@assayData[["exprs"]])) < 0.25, ]
+                                                  length(colnames(GEOsets[["GSE101462"]]@assayData[["exprs"]])) < 0.25, ]
 GEOsets[["GSE77858"]] = GEOsets[["GSE77858"]][rowSums(is.na(GEOsets[["GSE77858"]]@assayData[["exprs"]]))/
                                                 length(colnames(GEOsets[["GSE77858"]]@assayData[["exprs"]])) < 0.25, ]
 
@@ -334,7 +334,7 @@ eset101462 = eset101462[["data"]]
 RNGversion("4.0.2")
 eset77858 = GEOsets[["GSE77858"]]@assayData[["exprs"]]
 eset77858 = impute.knn(eset77858, k = 10, maxp = nrow(eset77858),
-                        rng.seed = 123)
+                       rng.seed = 123)
 eset77858 = eset77858[["data"]]
 
 # Update esets object
