@@ -547,7 +547,7 @@ rm(na_esets)
 saveRDS(esets, "intermediate_files/GSE_microarrays/esets_raw.RDS")
 saveRDS(filt_pdata, "intermediate_files/GSE_microarrays/filt_pdata.RDS")
 saveRDS(pdata, "intermediate_files/GSE_microarrays/pdata_raw.RDS")
-openxlsx::write.xlsx(full_pdata, "DGEA/Pheno.xlsx", overwrite = TRUE)
+openxlsx::write.xlsx(full_pdata, "DGEA/Pheno_microarrays.xlsx", overwrite = TRUE)
 
 ##### z-score-transformation #####
 # KBZ transformation method ( https:://www.biostars.org/p/283083/ )
@@ -640,7 +640,7 @@ original_MDS = ggplot(original_pca, aes(X1, X2, color = Study, shape = Type)) +
   labs(title = "Multidimensional Scaling Plot",
        x = paste0("\nPC1 (", round(100*original_mds$var.explained[1],2), "% of variance)"),
        y = paste0("PC2 (", round(100*original_mds$var.explained[2],2), "% of variance)\n"))
-tiff("QC/Original_MDS.tif", width = 1920, height = 1080, res = 100)
+tiff("QC/GSE_microarrays/Original_MDS.tif", width = 1920, height = 1080, res = 100)
 original_MDS
 dev.off()
 
@@ -674,7 +674,7 @@ KBZ_MDS_plot = ggplot(z_pca, aes(X1, X2, color = Study, shape = Type)) +
   labs(title = "Multidimensional Scaling Plot: z-score-normalised data",
        x = paste0("\nPC1 (", round(100*z_mds$var.explained[1],2), "% of variance)"),
        y = paste0("PC2 (", round(100*z_mds$var.explained[2],2), "% of variance)\n"))
-tiff("QC/KBZ_MDS.tif", width = 1920, height = 1080, res = 100)
+tiff("QC/GSE_microarrays/KBZ_MDS.tif", width = 1920, height = 1080, res = 100)
 KBZ_MDS_plot
 dev.off()
 
@@ -728,7 +728,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 # End of multiplot function
 
-tiff("QC/MDS_multiplot.tif", 
+tiff("QC/GSE_microarrays/MDS_multiplot.tif", 
      width = 2160, height = 3840, res = 150)
 multiplot(original_MDS, KBZ_MDS_plot, cols = 1)
 m = ggplot(multiplot(original_MDS, KBZ_MDS_plot, cols = 1))
@@ -759,7 +759,7 @@ original_boxplot = ggplot(melt(original_eset), aes(x=variable, y=value)) +
   labs(title = "Boxplot of expression",
        x = "\nSamples",
        y = "Expression\n")
-tiff("QC/Original_boxplot.tif", width = 1920, height = 1080, res = 100)
+tiff("QC/GSE_microarrays/Original_boxplot.tif", width = 1920, height = 1080, res = 100)
 original_boxplot
 dev.off()
 
@@ -788,11 +788,11 @@ KBZ_boxplot = ggplot(melt(z_eset), aes(x=variable, y=value)) +
   labs(title = "Boxplot of expression: z-score-normalised data",
        x = "\nSamples",
        y = "Expression\n")
-tiff("QC/KBZ_boxplot.tif", width = 1920, height = 1080, res = 100)
+tiff("QC/GSE_microarrays/KBZ_boxplot.tif", width = 1920, height = 1080, res = 100)
 KBZ_boxplot
 dev.off()
 
-tiff("QC/Boxplot_multiplot.tif", 
+tiff("QC/GSE_microarrays/Boxplot_multiplot.tif", 
      width = 3840, height = 3840, res = 150)
 multiplot(original_boxplot, KBZ_boxplot, cols = 1)
 m = ggplot(multiplot(original_boxplot, KBZ_boxplot, cols = 1))
@@ -841,7 +841,7 @@ original_heatmap = pheatmap(t(original_dists), col = hmcol,
                                               max(original_dists, na.rm = TRUE)), 
                             legend_labels = (c("small distance", "large distance")),
                             main = "Original heatmap")
-save_pheatmap_tiff(original_heatmap, "QC/original_heatmap.tif")
+save_pheatmap_tiff(original_heatmap, "QC/GSE_microarrays/original_heatmap.tif")
 
 # Z-score version
 annotation_for_heatmap = full_pdata[, c("Study", "Tissue_type")]
@@ -871,7 +871,7 @@ z_heatmap = pheatmap(t(z_dists), col = hmcol,
                                        max(z_dists, na.rm = TRUE)), 
                      legend_labels = (c("small distance", "large distance")),
                      main = "Z-score normalisation heatmap")
-save_pheatmap_tiff(z_heatmap, "QC/KBZ_heatmap.tif")
+save_pheatmap_tiff(z_heatmap, "QC/GSE_microarrays/KBZ_heatmap.tif")
 # 
 # ##### Differential Gene Expression (DGEA) #####
 # 
