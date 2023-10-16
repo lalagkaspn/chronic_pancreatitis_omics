@@ -4,6 +4,8 @@
 library(dplyr)
 library(GEOquery) # updated
 library(org.Hs.eg.db)
+library(matrixStats)
+library(limma)
 
 ##### Downloading data #####
 datasets = c("GSE194331", "GSE133684")
@@ -259,7 +261,8 @@ esets[[2]] = esets[[2]][,c("ENTREZ_GENE_ID",
                            intersect(colnames(esets[[2]]),
                                      filt_pdata[[2]]$Patient_ID))]
 
-original_exprs = esets[[1]] %>% inner_join(esets[[2]], by = "ENTREZ_GENE_ID") 
+original_exprs = esets[[1]] %>% 
+  inner_join(esets[[2]], by = "ENTREZ_GENE_ID") %>%
   dplyr::select(ENTREZ_GENE_ID, everything())
 
 rows = original_exprs$ENTREZ_GENE_ID
