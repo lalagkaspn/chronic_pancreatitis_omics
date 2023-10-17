@@ -62,9 +62,11 @@ filt_pdata[["GSE143754"]] = pdata$GSE143754 %>%
                 Tissue_type = "disease state:ch1")
 
 # Change Tissue_type to chronic pancreatitis, tumor and normal
+table(filt_pdata$GSE143754$Tissue_type)
 filt_pdata$GSE143754$Tissue_type = gsub("Tumor", "tumor", filt_pdata$GSE143754$Tissue_type)
 filt_pdata$GSE143754$Tissue_type = gsub("Adjacent Normal", "non_tumor", filt_pdata$GSE143754$Tissue_type)
 filt_pdata$GSE143754$Tissue_type = gsub("Chronic Pancreatitis", "chronic_pancreatitis", filt_pdata$GSE143754$Tissue_type)
+table(filt_pdata$GSE143754$Tissue_type)
 ## NOTE: We keep all samples (including PDAC) because we want to adjust for them in the DGEA between normal and CPs
 
 # Clear patient ID
@@ -102,8 +104,10 @@ filt_pdata[["GSE61166"]] = pdata$GSE61166 %>%
                 Tissue_type = "disease status:ch1")
 
 # Change Tissue_type to chronic pancreatitis, tumor and normal
+table(filt_pdata$GSE61166$Tissue_type)
 filt_pdata$GSE61166$Tissue_type = gsub("pancreatitis", "chronic_pancreatitis", filt_pdata$GSE61166$Tissue_type)
 filt_pdata$GSE61166$Tissue_type = gsub("pancreatic tumor", "tumor", filt_pdata$GSE61166$Tissue_type)
+table(filt_pdata$GSE61166$Tissue_type)
 
 # Clear patient ID
 filt_pdata$GSE61166$Patient_ID = gsub("Pancreatitis_tissues_of_Patient", "", filt_pdata$GSE61166$Patient_ID)
@@ -138,9 +142,11 @@ filt_pdata[["GSE71989"]] = pdata$GSE71989 %>%
                 Tissue_type = "tissue subtype:ch1")
 
 # Change Tissue_type to chronic pancreatitis, tumor and normal
+table(filt_pdata$GSE71989$Tissue_type)
 filt_pdata$GSE71989$Tissue_type = gsub("CP", "chronic_pancreatitis", filt_pdata$GSE71989$Tissue_type)
 filt_pdata$GSE71989$Tissue_type = gsub("normal pancreatic tissue", "non_tumor", filt_pdata$GSE71989$Tissue_type)
 filt_pdata$GSE71989$Tissue_type = gsub("PDAC", "tumor", filt_pdata$GSE71989$Tissue_type)
+table(filt_pdata$GSE71989$Tissue_type)
 
 # Clear patient ID
 filt_pdata$GSE71989$Patient_ID = gsub(", human normal pancreatic tissue", "", filt_pdata$GSE71989$Patient_ID)
@@ -176,9 +182,11 @@ filt_pdata[["GSE101462"]] = pdata$GSE101462 %>%
                 Tissue_storage = "tissue storage:ch1")
 
 # Change Tissue_type to chronic pancreatitis, tumor and normal
+table(filt_pdata$GSE101462$Tissue_type)
 filt_pdata$GSE101462$Tissue_type = gsub("pancreatitis", "chronic_pancreatitis", filt_pdata$GSE101462$Tissue_type)
 filt_pdata$GSE101462$Tissue_type = gsub("normal", "non_tumor", filt_pdata$GSE101462$Tissue_type)
 filt_pdata$GSE101462$Tissue_type = gsub("PDAC", "tumor", filt_pdata$GSE101462$Tissue_type)
+table(filt_pdata$GSE101462$Tissue_type)
 
 # Change Tissue_storage
 filt_pdata$GSE101462$Tissue_storage = gsub("fresh frozen (FF)", "fresh_frozen", filt_pdata$GSE101462$Tissue_type)
@@ -207,10 +215,12 @@ filt_pdata[["GSE77858"]] = pdata$GSE77858 %>%
                 Tissue_type = "morphology:ch2")
 
 # Change Tissue_type to chronic pancreatitis, tumor and normal
+table(filt_pdata$GSE77858$Tissue_type)
 filt_pdata$GSE77858$Tissue_type = gsub("Normal", "non_tumor", filt_pdata$GSE77858$Tissue_type)
 filt_pdata$GSE77858$Tissue_type = gsub("Panreatitis", "chronic_pancreatitis", filt_pdata$GSE77858$Tissue_type)
 filt_pdata$GSE77858$Tissue_type = gsub("Pancreatitis", "chronic_pancreatitis", filt_pdata$GSE77858$Tissue_type)
 filt_pdata$GSE77858$Tissue_type = gsub("Tumor", "tumor", filt_pdata$GSE77858$Tissue_type)
+table(filt_pdata$GSE77858$Tissue_type)
 
 # Clear patient ID
 filt_pdata$GSE77858$Patient_ID = gsub("PancTuRef2 vs. ", "", filt_pdata[["GSE77858"]]$Patient_ID)
