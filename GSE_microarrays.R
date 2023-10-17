@@ -661,7 +661,7 @@ rownames(original_exprs) = rows; rm(rows) # 13,744 x 165
 # Making sure we do not have NAs in any row
 original_exprs = original_exprs[rowSums(is.na(original_exprs)) != ncol(original_exprs), ]
 original_exprs_nonas = na.omit(original_exprs) # 13,744 x 165
-# Keeping all samples in our full_pdata_filt object
+# Keeping all samples in our full_pdata object
 original_exprs_nonas = original_exprs_nonas[, full_pdata$GEO_accession] # 13,744 x 165
 
 # Joining in one expression matrix: z-score normalized version
