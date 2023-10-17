@@ -6,6 +6,9 @@ library(GEOquery) # updated
 library(org.Hs.eg.db)
 library(matrixStats)
 library(limma)
+library(ggplot2)
+library(reshape2)
+library(pheatmap)
 
 ##### Downloading data #####
 datasets = c("GSE194331", "GSE133684")
@@ -59,15 +62,13 @@ filt_pdata[["GSE194331"]] = pdata$GSE194331 %>%
                 Platform = platform_id,
                 Tissue_type = "pathology:ch1")
 
-# Change Tissue_type to chronic pancreatitis and normal
-for (i in 1:length(filt_pdata$GSE194331$Tissue_type)) {
-  if (filt_pdata$GSE194331$Tissue_type[i] != "Healthy control") {
-    filt_pdata$GSE194331$Tissue_type[i] = "chronic_pancreatitis"
-  } 
-  if (filt_pdata$GSE194331$Tissue_type[i] == "Healthy control") {
-    filt_pdata$GSE194331$Tissue_type[i] = "non_tumor"
-  } 
-}; rm(i)
+# Change Tissue_type to chronic pancreatitis, tumor and normal
+table(filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Healthy control", "non_tumor", filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Mild AP", "chronic_pancreatitis", filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Moderately-severe AP", "chronic_pancreatitis", filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Severe AP", "chronic_pancreatitis", filt_pdata$GSE194331$Tissue_type)
+table(filt_pdata$GSE194331$Tissue_type)
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE194331$Tissue_type = factor(x = filt_pdata$GSE194331$Tissue_type,
@@ -101,14 +102,10 @@ filt_pdata[["GSE133684"]] = pdata$GSE133684 %>%
                 Tissue_type = "disease state:ch1")
 
 # Change Tissue_type to chronic pancreatitis and normal
-for (i in 1:length(filt_pdata$GSE133684$Tissue_type)) {
-  if (filt_pdata$GSE133684$Tissue_type[i] == "PDAC") {
-    filt_pdata$GSE133684$Tissue_type[i] = "tumor"
-  } 
-  if (filt_pdata$GSE133684$Tissue_type[i] == "healthy") {
-    filt_pdata$GSE133684$Tissue_type[i] = "non_tumor"
-  } 
-}; rm(i)
+table(filt_pdata$GSE133684$Tissue_type)
+filt_pdata$GSE133684$Tissue_type = gsub("PDAC", "tumor", filt_pdata$GSE133684$Tissue_type)
+filt_pdata$GSE133684$Tissue_type = gsub("healthy", "non_tumor", filt_pdata$GSE133684$Tissue_type)
+table(filt_pdata$GSE133684$Tissue_type)
 
 # Add to filt_pdata the CP patient IDs
 cp_patients_ids = setdiff(colnames(GSE133684_tpm), filt_pdata$GSE133684$Patient_ID)[-1]
