@@ -64,10 +64,14 @@ filt_pdata[["GSE194331"]] = pdata$GSE194331 %>%
 
 # Change Tissue_type to chronic pancreatitis, tumor and normal
 table(filt_pdata$GSE194331$Tissue_type)
-filt_pdata$GSE194331$Tissue_type = gsub("Healthy control", "non_tumor", filt_pdata$GSE194331$Tissue_type)
-filt_pdata$GSE194331$Tissue_type = gsub("Mild AP", "chronic_pancreatitis", filt_pdata$GSE194331$Tissue_type)
-filt_pdata$GSE194331$Tissue_type = gsub("Moderately-severe AP", "chronic_pancreatitis", filt_pdata$GSE194331$Tissue_type)
-filt_pdata$GSE194331$Tissue_type = gsub("Severe AP", "chronic_pancreatitis", filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Healthy control", "non_tumor",
+                                        filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Mild AP", "chronic_pancreatitis",
+                                        filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Moderately-severe AP", "chronic_pancreatitis", 
+                                        filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Severe AP", "chronic_pancreatitis",
+                                        filt_pdata$GSE194331$Tissue_type)
 table(filt_pdata$GSE194331$Tissue_type)
 
 # Transform to factors with consistent universal levels
@@ -179,9 +183,13 @@ transcript_lengths = data.frame(transcript_id = transcripts_data$tx_id,
 # Each row may contain multiple entrezIDs --> split them into separate rows --> find the longest transcript length for duplicated entrezIDs
 temp = stringr::str_split_fixed(transcript_lengths$entrezID, ",", n = Inf)
 transcript_lengths = cbind(transcript_lengths[, 2], temp)
-transcript_lengths = reshape2::melt(transcript_lengths, "longest_transcript_length", colnames(transcript_lengths)[2:ncol(transcript_lengths)])
-transcript_lengths = transcript_lengths %>% dplyr::select(entrezID = value, longest_transcript_length) %>% distinct()
-transcript_lengths = transcript_lengths[-which(transcript_lengths$entrezID == ""), ] ; rownames(transcript_lengths) = NULL
+transcript_lengths = reshape2::melt(transcript_lengths, 
+                                    "longest_transcript_length",
+                                    colnames(transcript_lengths)[2:ncol(transcript_lengths)])
+transcript_lengths = transcript_lengths %>% dplyr::select(entrezID = value,
+                                                          longest_transcript_length) %>% distinct()
+transcript_lengths = transcript_lengths[-which(transcript_lengths$entrezID == ""), ]
+rownames(transcript_lengths) = NULL
 transcript_lengths = transcript_lengths %>% 
   group_by(entrezID) %>%
   summarise(longest_transcript_length = max(longest_transcript_length, na.rm = TRUE))
@@ -189,27 +197,39 @@ transcript_lengths = transcript_lengths %>%
 # Map gene lengths to rownames of the counts matrix
 transcript_lengths = as.data.frame(transcript_lengths)
 rownames(transcript_lengths) = transcript_lengths$entrezID
-transcript_lengths_in_raw_counts = transcript_lengths %>% dplyr::filter(entrezID %in% GSE194331_raw_counts$GeneID)
+transcript_lengths_in_raw_counts = transcript_lengths %>% 
+  dplyr::filter(entrezID %in% GSE194331_raw_counts$GeneID)
 transcript_lengths_in_raw_counts$entrezID = as.integer(transcript_lengths_in_raw_counts$entrezID)
 transcript_lengths_in_raw_counts = transcript_lengths_in_raw_counts %>% arrange(entrezID)
-GSE194331_raw_counts = GSE194331_raw_counts %>% dplyr::filter(GeneID %in% transcript_lengths_in_raw_counts$entrezID)
+GSE194331_raw_counts = GSE194331_raw_counts %>% 
+  dplyr::filter(GeneID %in% transcript_lengths_in_raw_counts$entrezID)
 GSE194331_raw_counts = GSE194331_raw_counts %>% dplyr::arrange(GeneID)
 
-sum(transcript_lengths_in_raw_counts$entrezID == GSE194331_raw_counts$GeneID) == nrow(GSE194331_raw_counts) # TRUE --> entrezIDs are in the same order in both files
+sum(transcript_lengths_in_raw_counts$entrezID == 
+      GSE194331_raw_counts$GeneID) == 
+  nrow(GSE194331_raw_counts) # TRUE --> entrezIDs are in the same order in both files
 
 # Calculate RPK
 # Divide the counts by transcript length in kB
 GSE194331_rpk = apply(subset(GSE194331_raw_counts, select = c(-GeneID)), 2,
-                      function(x) x / (transcript_lengths_in_raw_counts$longest_transcript_length / 1000))
+                      function(x) {
+                          x / (transcript_lengths_in_raw_counts$longest_transcript_length / 1000)
+                        }
+                      )
 GSE194331_rpk = as.data.frame(GSE194331_rpk)
 
 # Calculate TPM
 GSE194331_tpm = apply(GSE194331_rpk, 2,
-                      function (x) x / sum(as.numeric(x)) * 10^6)
+                      function (x) x / (sum(as.numeric(x)) / 10^6))
 GSE194331_tpm = as.data.frame(GSE194331_tpm)
-GSE194331_tpm$GeneID = GSE194331_raw_counts$GeneID ; GSE194331_tpm = GSE194331_tpm %>% dplyr::relocate(GeneID, .before = GSM5833563) %>% dplyr::rename(ENTREZ_GENE_ID = GeneID)
+GSE194331_tpm$GeneID = GSE194331_raw_counts$GeneID
+GSE194331_tpm = GSE194331_tpm %>% 
+  dplyr::relocate(GeneID, .before = GSM5833563) %>%
+  dplyr::rename(ENTREZ_GENE_ID = GeneID)
 
-rm(GSE194331_rpk, ah, edb, temp, transcript_lengths, transcript_lengths_in_raw_counts, transcripts_data, genes_data, genes_map, entrezid_temp, latest_homo_sapiens)
+rm(GSE194331_rpk, ah, edb, temp, transcript_lengths, 
+   transcript_lengths_in_raw_counts, transcripts_data, genes_data, genes_map, 
+   entrezid_temp, latest_homo_sapiens)
 
 ## GSE133684_tpm: convert ensembl gene IDs to Entrez Gene IDs
 
@@ -219,6 +239,7 @@ mapped_genes_official = mappedkeys(ref)
 ref_df = as.data.frame(ref[mapped_genes_official]) ; rm(ref, mapped_genes_official)
 ref_df = ref_df %>% dplyr::rename(ENTREZ_GENE_ID = gene_id)
 length(unique(ref_df$ensembl_id)) == length(ref_df$ensembl_id) # FALSE --> duplicates in RefSeq --> remove them
+
 # remove ensembl_ids that match to more than one entrezID
 duplicated_ensembl = unique(ref_df[which(duplicated(ref_df$ensembl_id)), "ensembl_id"])
 ref_df = ref_df %>% dplyr::filter(!ensembl_id %in% duplicated_ensembl) ; rm(duplicated_ensembl)
@@ -258,6 +279,13 @@ esets[[2]] = esets[[2]][,c("ENTREZ_GENE_ID",
                            intersect(colnames(esets[[2]]),
                                      filt_pdata[[2]]$Patient_ID))]
 
+# log2(TPM + 1) transformation ###
+for (i in 1:length(esets)) {
+  cols_to_transform = setdiff(colnames(esets[[i]]), "ENTREZ_GENE_ID")
+  esets[[i]][cols_to_transform] = lapply(esets[[i]][cols_to_transform],
+                                         function(x) log2(x + 1))
+}
+
 original_exprs = esets[[1]] %>% 
   inner_join(esets[[2]], by = "ENTREZ_GENE_ID") %>%
   dplyr::select(ENTREZ_GENE_ID, everything())
@@ -268,8 +296,46 @@ rownames(original_exprs) = rows; rm(rows) # 23722 x 620
 # Making sure we do not have NAs in any row
 original_exprs = original_exprs[rowSums(is.na(original_exprs)) != ncol(original_exprs), ]
 original_exprs_nonas = na.omit(original_exprs) # 23722 x 620
-# Keeping all samples in our full_pdata_filt object
+# Keeping all samples in our full_pdata object
 original_exprs_nonas = original_exprs_nonas[, full_pdata$GEO_accession] # 23722 x 620
+
+## Save intermediate files ##
+saveRDS(esets, "intermediate_files/GSE_RNAseq/esets_raw.RDS")
+saveRDS(filt_pdata, "intermediate_files/GSE_RNAseq/filt_pdata.RDS")
+saveRDS(pdata, "intermediate_files/GSE_RNAseq/pdata_raw.RDS")
+
+##### z-score-transformation #####
+# KBZ transformation method ( https:://www.biostars.org/p/283083/ )
+z = list()
+for(i in 1:length(esets)){
+  df = as.data.frame(esets[[i]]) %>%
+    dplyr::select(-ENTREZ_GENE_ID)
+  t = as.data.frame(t(df))
+  z_t = sapply(t, function(t) (t-mean(t, na.rm = T))/sd(t, na.rm = T))
+  z[[i]] = as.matrix(t(z_t))
+  rownames(z[[i]]) = esets[[i]]$ENTREZ_GENE_ID
+  colnames(z[[i]]) = colnames(df)
+  z[[i]] = as.data.frame(z[[i]])
+  z[[i]]$EntrezGene.ID = esets[[i]]$ENTREZ_GENE_ID
+  rm(t, z_t, df)
+}; rm(i)
+
+# Joining in one expression matrix: z-score normalized version
+for (i in 1:length(z)){
+  z[[i]]$EntrezGene.ID = as.character(z[[i]]$EntrezGene.ID)
+  z[[i]] = z[[i]][,c("EntrezGene.ID", 
+                     intersect(colnames(z[[i]]),
+                               filt_pdata[[i]]$GEO_accession))]
+}
+z_exprs = z[[1]] %>% inner_join(z[[2]], by = "EntrezGene.ID")
+  dplyr::select(EntrezGene.ID, everything())
+
+rownames(z_exprs) = z_exprs$EntrezGene.ID
+z_exprs = as.matrix(z_exprs %>% dplyr::select(-EntrezGene.ID)) # 13,744 x 165
+# Making sure we do not have NAs in any row
+z_exprs = z_exprs[rowSums(is.na(z_exprs)) != ncol(z_exprs), ]
+z_exprs_nonas = na.omit(z_exprs) # 13,744 x 165
+z_exprs_nonas = z_exprs_nonas[, full_pdata$GEO_accession] # 13,744 x 165
 
 # Multidimensional scaling plot: original matrix #####
 original_mds = plotMDS(original_exprs_nonas)
@@ -284,64 +350,226 @@ original_pca$X1 = as.numeric(original_pca$X1)
 original_pca$X2 = as.numeric(original_pca$X2)
 
 original_MDS = ggplot(original_pca, aes(X1, X2, color = Study, shape = Type)) +
-  geom_point(size = 3, alpha = 1) +
+  geom_point(size = 0.2) +
   scale_color_brewer(palette = "Dark2") +
-  theme(plot.title = element_text(face = "bold", size = 27, hjust = 0.5),
+  theme(plot.title = element_text(face = "bold", size = 5, hjust = 0.5),
         panel.background = element_rect(fill = "white", 
                                         colour = "white"),
         panel.grid = element_blank(),
-        axis.text = element_text(angle = 0, hjust = 1, margin = margin(t = 1, unit = "cm"),
-                                 size = 15),
-        axis.title = element_text(angle = 0, hjust = 0.5, margin = margin(t = 3, unit = "cm"),
-                                  size = 20),
-        axis.line = element_line(),
+        axis.text = element_text(angle = 0, hjust = 0.5, vjust = 0.5,
+                                 margin = margin(t = 1, unit = "cm"),
+                                 size = 2.5),
+        axis.title = element_text(angle = 0, hjust = 0.5, face = "bold", 
+                                  margin = margin(t = 3, unit = "cm"),
+                                  size = 3.5),
+        axis.line = element_line(linewidth = 0.3),
+        axis.ticks = element_line(linewidth = 0.2),
         legend.position = "right",
-        legend.text = element_text(size = 15),
-        legend.title = element_text(size = 17),
-        legend.key.size = unit(1, "cm"))+
+        legend.key.size = unit(1, units = "mm"),
+        legend.key.height = unit(1.5, "mm"),
+        legend.text = element_text(size = 2.5),
+        legend.title = element_text(face = "bold", size = 3),
+        legend.margin = ggplot2::margin(0, 0, 0, 0, unit = "mm"),
+        legend.spacing.y = unit(1, units = "mm"),
+        legend.spacing.x = unit(1, units = "mm"))+
   labs(title = "Multidimensional Scaling Plot",
-       x = paste0("\nPC1 (", round(100*original_mds$var.explained[1],2), "% of variance)"),
-       y = paste0("PC2 (", round(100*original_mds$var.explained[2],2), "% of variance)\n"))
-tiff("QC/GSE_RNAseq/Original_MDS.tif", width = 1920, height = 1080, res = 100)
+       # x = paste0("\nPC1 (", round(100*original_mds$var.explained[1],2), "% of variance)"),
+       # y = paste0("PC2 (", round(100*original_mds$var.explained[2],2), "% of variance)\n")
+       x = "MDS1", y = "MDS2")
 original_MDS
+ggsave(filename = "Original_MDS.tiff",
+       path = "QC/GSE_RNAseq", 
+       width = 1920, height = 1080, device = 'tiff', units = "px",
+       dpi = 700, compression = "lzw")
 dev.off()
+
+# MDS: normalized matrix
+z_mds = plotMDS(z_exprs_nonas)
+z_pca = data.frame(cbind(z_mds$x, z_mds$y, 
+                         as.character(full_pdata$Study), full_pdata$GEO_accession, 
+                         as.character(full_pdata$Tissue_type)))
+colnames(z_pca) = c("X1", "X2", "Study", "GSM", "Type")
+z_pca$Study = factor(z_pca$Study)
+z_pca$Type = factor(z_pca$Type)
+z_pca$X1 = as.numeric(z_pca$X1)
+z_pca$X2 = as.numeric(z_pca$X2)
+
+KBZ_MDS_plot = ggplot(z_pca, aes(X1, X2, color = Study, shape = Type)) +
+  geom_point(size = 0.2) +
+  scale_color_brewer(palette = "Dark2") +
+  theme(plot.title = element_text(face = "bold", size = 5, hjust = 0.5),
+        panel.background = element_rect(fill = "white", 
+                                        colour = "white"),
+        panel.grid = element_blank(),
+        axis.text = element_text(angle = 0, hjust = 0.5, vjust = 0.5,
+                                 margin = margin(t = 1, unit = "cm"),
+                                 size = 2.5),
+        axis.title = element_text(angle = 0, hjust = 0.5, face = "bold", 
+                                  margin = margin(t = 3, unit = "cm"),
+                                  size = 3.5),
+        axis.line = element_line(linewidth = 0.3),
+        axis.ticks = element_line(linewidth = 0.2),
+        legend.position = "right",
+        legend.key.size = unit(1, units = "mm"),
+        legend.key.height = unit(1.5, "mm"),
+        legend.text = element_text(size = 2.5),
+        legend.title = element_text(face = "bold", size = 3),
+        legend.margin = ggplot2::margin(0, 0, 0, 0, unit = "mm"),
+        legend.spacing.y = unit(1, units = "mm"),
+        legend.spacing.x = unit(1, units = "mm"))+
+  labs(title = "Multidimensional Scaling Plot: normalized data",
+       # x = paste0("\nPC1 (", round(100*original_mds$var.explained[1],2), "% of variance)"),
+       # y = paste0("PC2 (", round(100*original_mds$var.explained[2],2), "% of variance)\n")
+       x = "MDS1", y = "MDS2")
+KBZ_MDS_plot
+ggsave(filename = "z_MDS.tiff",
+       path = "QC/GSE_RNAseq", 
+       width = 1920, height = 1080, device = 'tiff', units = "px",
+       dpi = 700, compression = "lzw")
+dev.off()
+
+# Defining the multiplot function
+
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+# End of multiplot function
+
+tiff("QC/GSE_RNAseq/MDS_multiplot.tiff", 
+     width = 1920, height = 2160, res = 700, compression = "lzw")
+multiplot(original_MDS, KBZ_MDS_plot, cols = 1)
+m = ggplot(multiplot(original_MDS, KBZ_MDS_plot, cols = 1))
+dev.off(); rm(m)
 
 # Global expression boxplot: original matrix
 original_eset = as.data.frame(original_exprs_nonas)
 original_boxplot = ggplot(melt(original_eset), aes(x=variable, y=value)) +
-  geom_boxplot(outlier.size = 0.4, outlier.shape = 20, outlier.alpha = 0.1,
+  geom_boxplot(outlier.size = 0.01, outlier.shape = 20, linewidth = 0.02,
                fill = c(rep("cyan", 119),
                         rep("chartreuse", 501))) +
-  scale_y_continuous("Expression", limits = c(0,round(max(melt(original_eset)$value)+1)), 
-                     breaks = seq(0,round(max(melt(original_eset)$value)+1), 1))+
-  theme(plot.title = element_text(face = "bold", size = 27, hjust = 0.5),
+  scale_y_continuous("Expression",
+                     limits = c(-1,
+                                round(max(reshape2::melt(original_eset)$value, na.rm = TRUE)+1)), 
+                     breaks = seq(-1,
+                                  round(max(reshape2::melt(original_eset)$value, na.rm = TRUE)+1), 1))+
+  theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
         panel.background = element_rect(fill = "white", 
                                         colour = "white"),
         panel.grid = element_blank(),
-        axis.text.y = element_text(angle = 0, hjust = 1, margin = margin(t = 1, unit = "cm"),
-                                   size = 14),
-        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 5, 
-                                   margin = margin(t = .05, unit = "cm") ),
-        axis.title = element_text(angle = 0, hjust = 0.5, margin = margin(t = 1, unit = "cm"),
-                                  size = 25, face = "bold"),
-        axis.line = element_line())+
-  labs(title = "Boxplot of TPMs",
+        axis.text.y = element_text(angle = 0, hjust = 1, #margin = margin(t = 1, unit = "cm"),
+                                   size = 3),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 1.5), 
+        #margin = margin(t = .05, unit = "cm") ),
+        axis.title = element_text(angle = 0, hjust = 0.5, #margin = margin(t = 1, unit = "cm"),
+                                  size = 10, face = "bold"),
+        axis.line = element_line(linewidth = 0.3),
+        axis.ticks.x = element_line(linewidth = 0.1),
+        axis.ticks.y = element_line(linewidth = 0.1))+
+  labs(title = bquote("Boxplot of expression:" ~ bold(log[2](TPM + "1") ~ .("values"))),
        x = "\nSamples",
-       y = "TPM\n")
-tiff("QC/GSE_RNAseq/Original_boxplot.tif", width = 1920, height = 1080, res = 100)
+       y = bquote("Expression:" ~ bold(log[2](TPM + "1"))))
+
 original_boxplot
+ggsave(filename = "Original_boxplot.tiff",
+       path = "QC/GSE_RNAseq/", 
+       width = 7680, height = 3240, device = 'tiff', units = "px",
+       dpi = 700, compression = "lzw")
 dev.off()
 
+# Global expression boxplot: z-score normalised matrix
+z_eset = as.data.frame(z_exprs_nonas)
+KBZ_boxplot = ggplot(melt(z_eset), aes(x=variable, y=value)) +
+  geom_boxplot(outlier.size = 0.01, outlier.shape = 20, linewidth = 0.02,
+               fill = c(rep("cyan", 119),
+                        rep("chartreuse", 501))) +
+  scale_y_continuous("Expression",
+                     limits = c(round(min(reshape2::melt(z_eset)$value, na.rm = TRUE)-1),
+                                round(max(reshape2::melt(z_eset)$value, na.rm = TRUE)+1)), 
+                     breaks = seq(round(min(reshape2::melt(z_eset)$value, na.rm = TRUE)-1),
+                                  round(max(reshape2::melt(z_eset)$value, na.rm = TRUE)+1), 1))+
+  theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5),
+        panel.background = element_rect(fill = "white", 
+                                        colour = "white"),
+        panel.grid = element_blank(),
+        axis.text.y = element_text(angle = 0, hjust = 1, #margin = margin(t = 1, unit = "cm"),
+                                   size = 3),
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 1.5), 
+        #margin = margin(t = .05, unit = "cm") ),
+        axis.title = element_text(angle = 0, hjust = 0.5, #margin = margin(t = 1, unit = "cm"),
+                                  size = 10, face = "bold"),
+        axis.line = element_line(linewidth = 0.3),
+        axis.ticks.x = element_line(linewidth = 0.1),
+        axis.ticks.y = element_line(linewidth = 0.1))+
+  labs(title = bquote("Boxplot of expression: normalized" ~ bold(log[2](TPM + "1") ~ .("values"))),
+       x = "\nSamples",
+       y = bquote("Expression: normalized" ~ bold(log[2](TPM + "1"))))
+
+KBZ_boxplot
+ggsave(filename = "z_boxplot.tiff",
+       path = "QC/GSE_RNAseq/", 
+       width = 7680, height = 3240, device = 'tiff', units = "px",
+       dpi = 700, compression = "lzw")
+dev.off()
+
+tiff("QC/GSE_RNAseq/Boxplot_multiplot.tiff", 
+     width = 7680, height = 6480, res = 700, compression = "lzw")
+multiplot(original_boxplot, KBZ_boxplot, cols = 1)
+m = ggplot(multiplot(original_boxplot, KBZ_boxplot, cols = 1))
+dev.off(); rm(m)
+
 # Heatmaps
-save_pheatmap_png <- function(x, filename, width=2600, height=1800, res = 130) {
+save_pheatmap_png <- function(x, filename, width=2600*2, height=1800*2, res = 700) {
   png(filename, width = width, height = height, res = res)
   grid::grid.newpage()
   grid::grid.draw(x$gtable)
   dev.off()
 }
 
-save_pheatmap_tiff <- function(x, filename, width=2600, height=1800, res = 130) {
-  png(filename, width = width, height = height, res = res)
+save_pheatmap_tiff <- function(x, filename, width=2600*2, height=1800*2, res = 700) {
+  tiff(filename, width = width, height = height, res = res, compression = "lzw")
   grid::grid.newpage()
   grid::grid.draw(x$gtable)
   dev.off()
@@ -370,8 +598,379 @@ original_heatmap = pheatmap(t(original_dists), col = hmcol,
                             show_rownames = F,
                             show_colnames = F,
                             treeheight_col = 0,
+                            fontsize = 5,
                             legend_breaks = c(min(original_dists, na.rm = TRUE), 
                                               max(original_dists, na.rm = TRUE)), 
                             legend_labels = (c("small distance", "large distance")),
                             main = "Original heatmap")
-save_pheatmap_tiff(original_heatmap, "QC/GSE_RNAseq/original_heatmap.tif")
+save_pheatmap_tiff(original_heatmap, "QC/GSE_RNAseq/original_heatmap.tiff")
+
+# Z-score version
+annotation_for_heatmap = full_pdata[, c("Study", "Tissue_type")]
+rownames(annotation_for_heatmap) = full_pdata$GEO_accession
+
+z_dists = as.matrix(dist(t(z_exprs_nonas), method = "manhattan"))
+
+rownames(z_dists) = full_pdata$GEO_accession
+hmcol = rev(colorRampPalette(RColorBrewer::brewer.pal(9, "RdBu"))(255))
+colnames(z_dists) <- NULL
+diag(z_dists) <- NA
+
+ann_colors <- list(
+  Tissue_type = c(chronic_pancreatitis = "deeppink4", non_tumor = "dodgerblue4", tumor = "gray"),
+  Study = c(GSE194331 = "darkseagreen", GSE133684 = "darkorange")
+)
+
+z_heatmap = pheatmap(t(z_dists), col = hmcol,
+                     annotation_col = annotation_for_heatmap,
+                     annotation_colors = ann_colors,
+                     legend = TRUE,
+                     show_rownames = F,
+                     show_colnames = F,
+                     treeheight_col = 0,
+                     fontsize = 5,
+                     legend_breaks = c(min(z_dists, na.rm = TRUE), 
+                                       max(z_dists, na.rm = TRUE)), 
+                     legend_labels = (c("small distance", "large distance")),
+                     main = "Normalized data heatmap")
+save_pheatmap_tiff(z_heatmap, "QC/GSE_RNAseq/KBZ_heatmap.tiff")
+
+#
+# ##### Differential Gene Expression (DGEA) #####
+# 
+
+# Annotation with official gene symbols
+# official_df, Aliases, ID_Map
+official = org.Hs.egSYMBOL
+mapped_genes_official = mappedkeys(official)
+official_df = as.data.frame(official[mapped_genes_official])
+official_df = official_df %>% dplyr::rename(EntrezGene.ID = gene_id, Gene.Symbol = symbol)
+official_df$HGNC_Official = "Yes"
+official_df = official_df[-which(duplicated(official_df$Gene.Symbol)==T),]
+official_df = distinct(official_df)
+
+alias = org.Hs.egALIAS2EG
+mapped_genes_alias = mappedkeys(alias)
+alias_df = as.data.frame(alias[mapped_genes_alias])
+alias_df = alias_df %>% dplyr::rename(EntrezGene.ID = gene_id, Gene.Symbol = alias_symbol)
+alias_df = alias_df[-which(alias_df$Gene.Symbol %in% official_df$Gene.Symbol),]
+alias_df$HGNC_Official = "No"
+
+ID_Map = rbind(official_df, alias_df) %>% distinct()
+ID_Map$EntrezGene.ID = as.numeric(ID_Map$EntrezGene.ID)
+ID_Map = ID_Map[order(ID_Map$EntrezGene.ID),] %>%
+  dplyr::rename(probe=Gene.Symbol) %>%
+  dplyr::select(probe, EntrezGene.ID, HGNC_Official)
+
+# Aliases
+aliases_for_join = alias_df %>% dplyr::rename(Alias = Gene.Symbol)
+Aliases = official_df %>% inner_join(aliases_for_join,
+                                     by = "EntrezGene.ID") %>%
+  dplyr::select(Alias, Gene.Symbol, EntrezGene.ID) %>%
+  dplyr::rename(probe = Alias, HGNC_Symbol = Gene.Symbol,
+                Entrez = EntrezGene.ID) %>%
+  distinct()
+
+ID_Map$EntrezGene.ID = as.character(ID_Map$EntrezGene.ID)
+ID_Map = ID_Map %>% dplyr::rename(Gene.Symbol = probe)
+rm(alias, alias_df, aliases_for_join, official,
+   mapped_genes_alias, mapped_genes_official)
+
+# Create design and contrast matrix
+design = model.matrix(~0 + full_pdata$Tissue_type + full_pdata$Study)
+colnames(design) = c("chronic_pancreatitis", "non_tumor", "tumor", 
+                     "GSE194331") 
+rownames(design) = colnames(z_exprs_nonas)
+cont.matrix = makeContrasts(CPvsNormal = chronic_pancreatitis - non_tumor,
+                            CPvsTumor = chronic_pancreatitis - tumor,
+                            TumorvsNormal = tumor - non_tumor)
+
+# Limma
+z_fit = lmFit(z_exprs_nonas, design)
+z_fit2 = contrasts.fit(z_fit, cont.matrix)
+z_fit2 = eBayes(z_fit2, robust = TRUE)
+z_results = decideTests(z_fit2)
+results = as.data.frame(cbind(summary(z_results), rownames(summary(z_results))))
+colnames(results)[ncol(results)] = "direction"
+results = results %>% dplyr::select(direction, everything())
+
+DGEA_topTables = createWorkbook()
+addWorksheet(DGEA_topTables, "summary")
+writeData(DGEA_topTables, "summary", results)
+
+DE_maps = list()
+
+for (i in 1:ncol(z_fit2)){
+  z_DE = as.data.frame(topTable(z_fit2, adjust.method="BH", 
+                                number = Inf, coef = colnames(z_fit2)[i]))
+  z_DE$EntrezGene.ID = rownames(z_DE)
+  
+  # Annotation with official gene symbols
+  z_DE_mapped = z_DE %>% left_join(ID_Map, by = "EntrezGene.ID")
+  z_DE_mapped$Filter = NA
+  unmapped = which(is.na(z_DE_mapped$HGNC_Official))
+  z_DE_mapped$HGNC_Official[unmapped] = "unmapped"
+  for(j in 1:nrow(z_DE_mapped)){
+    if(z_DE_mapped$HGNC_Official[j] == "Yes"){
+      z_DE_mapped$Filter[j] = "Keep"
+    } else if(length(unique(z_DE_mapped$HGNC_Official[z_DE_mapped$EntrezGene.ID ==
+                                                      z_DE_mapped$EntrezGene.ID[j]])) > 1 &&
+              z_DE_mapped$HGNC_Official[j] == "No"){
+      z_DE_mapped$Filter[j] = "Discard"
+    } else if(unique(z_DE_mapped$HGNC_Official[z_DE_mapped$EntrezGene.ID ==
+                                               z_DE_mapped$EntrezGene.ID[j]]) == "No"){
+      z_DE_mapped$Filter[j] = "Keep"
+      z_DE_mapped$Gene.Symbol[j] = z_DE_mapped$EntrezGene.ID[j]
+    } else if(z_DE_mapped$HGNC_Official[j] == "unmapped"){
+      z_DE_mapped$Gene.Symbol[j] = z_DE_mapped$EntrezGene.ID[j]
+      z_DE_mapped$Filter[j] = "Keep"
+    }
+  }
+  
+  z_DE_mapped = z_DE_mapped %>% 
+    dplyr::filter(Filter == "Keep") %>%
+    dplyr::select(EntrezGene.ID, Gene.Symbol, everything()) %>%
+    dplyr::select(-Filter) %>%
+    distinct()
+  z_DE_mapped = z_DE_mapped[order(z_DE_mapped$adj.P.Val),]
+  rownames(z_DE_mapped) = z_DE_mapped$EntrezGene.ID
+  addWorksheet(DGEA_topTables, colnames(z_fit2)[i])
+  writeData(DGEA_topTables, colnames(z_fit2)[i], z_DE_mapped)
+  DE_maps[[i]] = z_DE_mapped
+}
+
+saveWorkbook(DGEA_topTables, "DGEA/GSE_RNAseq/DGEA_results.xlsx", overwrite = TRUE)
+names(DE_maps) = colnames(z_fit2)
+
+### ARIS MODIFICATION ON ARIS' CODE ### (lines 701-743)
+### CHECK FOR SPEED AND OUTPUT ###
+library(purrr)
+
+process_column <- function(col_name) {
+  z_DE <- as.data.frame(topTable(z_fit2, adjust.method="BH", number = Inf, coef = col_name))
+  z_DE$EntrezGene.ID <- rownames(z_DE)
+  
+  # Annotation with official gene symbols
+  z_DE_mapped <- z_DE %>%
+    left_join(ID_Map, by = "EntrezGene.ID") %>%
+    mutate(
+      Filter = case_when(
+        is.na(HGNC_Official) ~ "Keep",
+        HGNC_Official == "Yes" ~ "Keep",
+        HGNC_Official == "No" & 
+          length(unique(HGNC_Official[EntrezGene.ID == first(EntrezGene.ID)])) > 1 ~ "Discard",
+        TRUE ~ "Keep"
+      ),
+      Gene.Symbol = case_when(
+        Filter == "Keep" & is.na(Gene.Symbol) ~ as.character(EntrezGene.ID),
+        TRUE ~ Gene.Symbol
+      )
+    ) %>%
+    filter(Filter == "Keep") %>%
+    select(EntrezGene.ID, Gene.Symbol, everything(), -Filter) %>%
+    distinct() %>%
+    arrange(adj.P.Val)
+  
+  rownames(z_DE_mapped) <- z_DE_mapped$EntrezGene.ID
+  addWorksheet(DGEA_topTables, col_name)
+  writeData(DGEA_topTables, col_name, z_DE_mapped)
+  
+  return(z_DE_mapped)
+}
+
+DE_maps <- purrr::map(colnames(z_fit2), process_column)
+
+saveWorkbook(DGEA_topTables, "DGEA/GSE_RNAseq/DGEA_results.xlsx", overwrite = TRUE)
+names(DE_maps) = colnames(z_fit2)
+###
+
+##### Volcano plots #####
+# create custom key-value pairs for stat. sig genes (p.adj < 0.05) and n.s genes
+keyvals.colours = list()
+for (i in 1:length(DE_maps)) {
+  tab = DE_maps[[i]]
+  keyvals.colour <- ifelse(
+    tab$logFC < -1 & tab$adj.P.Val < 0.05, 'royalblue',
+    ifelse(tab$logFC > 1 & tab$adj.P.Val < 0.05, 'red4',
+           ifelse(abs(tab$logFC) < 1 & tab$adj.P.Val < 0.05, 'pink', 
+                  'grey')))
+  # keyvals.colour[is.na(keyvals.colour)] <- 'black'
+  names(keyvals.colour)[keyvals.colour == 'royalblue'] <- 'Down-regulated'
+  names(keyvals.colour)[keyvals.colour == 'red4'] <- 'Up-regulated'
+  names(keyvals.colour)[keyvals.colour == 'pink'] <- '|DE| < 1'
+  names(keyvals.colour)[keyvals.colour == 'grey'] <- 'p.adj > 0.05'
+  keyvals.colours[[i]] = keyvals.colour
+}
+names(keyvals.colours) = names(DE_maps)
+
+# CP vs. Normal samples
+volcano_CPvsNormal = EnhancedVolcano(DE_maps[["CPvsNormal"]],
+                                     lab = DE_maps[["CPvsNormal"]][, "Gene.Symbol"],
+                                     caption = NULL,
+                                     x = 'logFC',
+                                     y = 'adj.P.Val',
+                                     title = "Chronic Pancreatitis vs. Normal",
+                                     pCutoff = 0.05,
+                                     cutoffLineType = "dashed",
+                                     cutoffLineWidth = 0.3,
+                                     cutoffLineCol = "black",
+                                     FCcutoff = 1,
+                                     colCustom = keyvals.colour,
+                                     colAlpha = 0.7,
+                                     xlim = c(-5, 5),
+                                     ylab = bquote(bold(-log[10]("BH adj. p-value"))),
+                                     xlab = "\nDifferential expression",
+                                     pointSize = 1.5,
+                                     axisLabSize = 7,
+                                     subtitle = NULL,
+                                     labSize = 2,
+                                     selectLab = DE_maps[["CPvsNormal"]][1:20, "Gene.Symbol"], # top 20 genes
+                                     legendLabSize = 6,
+                                     legendIconSize = 4,
+                                     labFace = "bold",
+                                     boxedLabels = TRUE,
+                                     drawConnectors = TRUE,
+                                     typeConnectors = "closed",
+                                     arrowheads = FALSE,
+                                     widthConnectors = 0.3,
+                                     max.overlaps = Inf,
+                                     legendLabels = c("NS", "|DE| > 1 s.d.", 
+                                                      "p.adj < 0.05", 
+                                                      "p.adj < 0.05 & |DE| > 1 s.d."))+
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(linewidth = 0.4),
+        plot.title = element_text(size = 12, face = "bold"),
+        axis.title = element_text(face = "bold", size = 10),
+        axis.line = element_line(colour = "black", linewidth = 0.4),
+        axis.ticks = element_line(colour = "black", linewidth = 0.4),
+        axis.ticks.length = unit(1, units = "mm"),
+        legend.position = "bottom",
+        #legend.text = element_text(size = 8),
+        #legend.title = element_blank(),
+        #legend.margin = ggplot2::margin(0, 0, 0, 0, unit = "mm"),
+        #legend.spacing.y = unit(1, units = "mm"),
+        legend.spacing.x = unit(0.3, units = "mm")#,
+        #legend.background = element_blank(),
+        #legend.box.background = element_rect(colour = "black"))
+  )
+volcano_CPvsNormal
+ggsave(filename = "CPvsNormal_Volcano.tiff",
+       path = "DGEA/GSE_microarrays/", 
+       width = 100, height = 142, device = 'tiff', units = "mm",
+       dpi = 700, compression = "lzw")
+dev.off()
+
+# CP vs. Tumor samples
+volcano_CPvsTumor = EnhancedVolcano(DE_maps[["CPvsTumor"]],
+                                    lab = DE_maps[["CPvsTumor"]][, "Gene.Symbol"],
+                                    caption = NULL,
+                                    x = 'logFC',
+                                    y = 'adj.P.Val',
+                                    title = "Chronic Pancreatitis vs. PDAC",
+                                    pCutoff = 0.05,
+                                    cutoffLineType = "dashed",
+                                    cutoffLineWidth = 0.3,
+                                    cutoffLineCol = "black",
+                                    FCcutoff = 1,
+                                    colCustom = keyvals.colour,
+                                    colAlpha = 0.7,
+                                    xlim = c(-5, 5),
+                                    ylab = bquote(bold(-log[10]("BH adj. p-value"))),
+                                    xlab = "\nDifferential expression",
+                                    pointSize = 1.5,
+                                    axisLabSize = 7,
+                                    subtitle = NULL,
+                                    labSize = 2,
+                                    selectLab = DE_maps[["CPvsTumor"]][1:20, "Gene.Symbol"], # top 20 genes
+                                    legendLabSize = 6,
+                                    legendIconSize = 4,
+                                    labFace = "bold",
+                                    boxedLabels = TRUE,
+                                    drawConnectors = TRUE,
+                                    typeConnectors = "closed",
+                                    arrowheads = FALSE,
+                                    widthConnectors = 0.3,
+                                    max.overlaps = Inf,
+                                    legendLabels = c("NS", "|DE| > 1 s.d.", 
+                                                     "p.adj < 0.05", 
+                                                     "p.adj < 0.05 & |DE| > 1 s.d."))+
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(linewidth = 0.4),
+        plot.title = element_text(size = 12, face = "bold"),
+        axis.title = element_text(face = "bold", size = 10),
+        axis.line = element_line(colour = "black", linewidth = 0.4),
+        axis.ticks = element_line(colour = "black", linewidth = 0.4),
+        axis.ticks.length = unit(1, units = "mm"),
+        legend.position = "bottom",
+        #legend.text = element_text(size = 8),
+        #legend.title = element_blank(),
+        #legend.margin = ggplot2::margin(0, 0, 0, 0, unit = "mm"),
+        #legend.spacing.y = unit(1, units = "mm"),
+        legend.spacing.x = unit(0.3, units = "mm")#,
+        #legend.background = element_blank(),
+        #legend.box.background = element_rect(colour = "black"))
+  )
+volcano_CPvsTumor
+ggsave(filename = "CPvsTumor_Volcano.tiff",
+       path = "DGEA/GSE_microarrays/", 
+       width = 100, height = 142, device = 'tiff', units = "mm",
+       dpi = 700, compression = "lzw")
+dev.off()
+
+# Tumor vs. Normal samples
+volcano_TumorvsNormal = EnhancedVolcano(DE_maps[["TumorvsNormal"]],
+                                        lab = DE_maps[["TumorvsNormal"]][, "Gene.Symbol"],
+                                        caption = NULL,
+                                        x = 'logFC',
+                                        y = 'adj.P.Val',
+                                        title = "Chronic Pancreatitis vs. PDAC",
+                                        pCutoff = 0.05,
+                                        cutoffLineType = "dashed",
+                                        cutoffLineWidth = 0.3,
+                                        cutoffLineCol = "black",
+                                        FCcutoff = 1,
+                                        colCustom = keyvals.colour,
+                                        colAlpha = 0.7,
+                                        xlim = c(-5, 5),
+                                        ylab = bquote(bold(-log[10]("BH adj. p-value"))),
+                                        xlab = "\nDifferential expression",
+                                        pointSize = 1.5,
+                                        axisLabSize = 7,
+                                        subtitle = NULL,
+                                        labSize = 2,
+                                        selectLab = DE_maps[["TumorvsNormal"]][1:20, "Gene.Symbol"], # top 20 genes
+                                        legendLabSize = 6,
+                                        legendIconSize = 4,
+                                        labFace = "bold",
+                                        boxedLabels = TRUE,
+                                        drawConnectors = TRUE,
+                                        typeConnectors = "closed",
+                                        arrowheads = FALSE,
+                                        widthConnectors = 0.3,
+                                        max.overlaps = Inf,
+                                        legendLabels = c("NS", "|DE| > 1 s.d.", 
+                                                         "p.adj < 0.05", 
+                                                         "p.adj < 0.05 & |DE| > 1 s.d."))+
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(linewidth = 0.4),
+        plot.title = element_text(size = 12, face = "bold"),
+        axis.title = element_text(face = "bold", size = 10),
+        axis.line = element_line(colour = "black", linewidth = 0.4),
+        axis.ticks = element_line(colour = "black", linewidth = 0.4),
+        axis.ticks.length = unit(1, units = "mm"),
+        legend.position = "bottom",
+        #legend.text = element_text(size = 8),
+        #legend.title = element_blank(),
+        #legend.margin = ggplot2::margin(0, 0, 0, 0, unit = "mm"),
+        #legend.spacing.y = unit(1, units = "mm"),
+        legend.spacing.x = unit(0.3, units = "mm")#,
+        #legend.background = element_blank(),
+        #legend.box.background = element_rect(colour = "black"))
+  )
+volcano_TumorvsNormal
+ggsave(filename = "TumorvsNormal_Volcano.tiff",
+       path = "DGEA/GSE_microarrays/", 
+       width = 100, height = 142, device = 'tiff', units = "mm",
+       dpi = 700, compression = "lzw")
+dev.off()
+
