@@ -62,39 +62,23 @@ filt_pdata[["GSE143754"]] = pdata$GSE143754 %>%
                 Tissue_type = "disease state:ch1")
 
 # Change Tissue_type to chronic pancreatitis and normal
-for (i in 1:length(filt_pdata$GSE143754$Tissue_type)) {
-  if (filt_pdata$GSE143754$Tissue_type[i] == "Tumor") {
-    filt_pdata$GSE143754$Tissue_type[i] = "tumor"
-  } 
-  if (filt_pdata$GSE143754$Tissue_type[i] == "Adjacent Normal") {
-    filt_pdata$GSE143754$Tissue_type[i] = "non_tumor"
-  } 
-  if (filt_pdata$GSE143754$Tissue_type[i] == "Chronic Pancreatitis") {
-    filt_pdata$GSE143754$Tissue_type[i] = "chronic_pancreatitis"
-  } 
-}; rm(i)
-
-### ARIS MODIFICATION ### (lines 65 - 75)
 filt_pdata$GSE143754$Tissue_type <- case_when(
   filt_pdata$GSE143754$Tissue_type == "Tumor" ~ "tumor",
-  filt_pdata$GSE143754$Tissue_type == "Adjacent Normal" ~ "non_tumor",
+  filt_pdata$GSE143754$Tissue_type == "Adjacent Normal" ~ "normal",
   filt_pdata$GSE143754$Tissue_type == "Chronic Pancreatitis" ~ "chronic_pancreatitis",
   TRUE ~ filt_pdata$GSE143754$Tissue_type
 )
-###
 
 ## NOTE: We keep all samples (including PDAC) because we want to adjust for them in the DGEA between normal and CPs
 
 # Clear patient ID
-filt_pdata[["GSE143754"]]$Patient_ID = gsub("Benign Tissue, Biological Replicate ",
-                                            "", filt_pdata[["GSE143754"]]$Patient_ID)
-filt_pdata[["GSE143754"]]$Patient_ID = gsub("Malignant Tissue, Biological Replicate ",
-                                            "", filt_pdata[["GSE143754"]]$Patient_ID)
+filt_pdata[["GSE143754"]]$Patient_ID = gsub("Benign Tissue, Biological Replicate ", "", filt_pdata[["GSE143754"]]$Patient_ID)
+filt_pdata[["GSE143754"]]$Patient_ID = gsub("Malignant Tissue, Biological Replicate ", "", filt_pdata[["GSE143754"]]$Patient_ID)
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE143754$Tissue_type = factor(x = filt_pdata$GSE143754$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
+                                          levels = c("chronic_pancreatitis", "normal", "tumor"),
+                                          labels = c("chronic_pancreatitis", "normal", "tumor"))
 filt_pdata$GSE143754$Gender = factor(x = filt_pdata$GSE143754$Gender,
                                      levels = c("Female","Male"),
                                      labels = c("female","male"))
@@ -122,33 +106,20 @@ filt_pdata[["GSE61166"]] = pdata$GSE61166 %>%
                 Tissue_type = "disease status:ch1")
 
 # Change Tissue_type to chronic pancreatitis and normal
-for (i in 1:length(filt_pdata$GSE61166$Tissue_type)) {
-  if (filt_pdata$GSE61166$Tissue_type[i] == "pancreatitis") {
-    filt_pdata$GSE61166$Tissue_type[i] = "chronic_pancreatitis"
-  } 
-  if (filt_pdata$GSE61166$Tissue_type[i] == "pancreatic tumor") {
-    filt_pdata$GSE61166$Tissue_type[i] = "tumor"
-  } 
-}; rm(i)
-
-### ARIS MODIFICATION ### (lines 125-132)
 filt_pdata$GSE61166$Tissue_type <- case_when(
   filt_pdata$GSE61166$Tissue_type == "pancreatitis" ~ "chronic_pancreatitis",
   filt_pdata$GSE61166$Tissue_type == "pancreatic tumor" ~ "tumor",
   TRUE ~ filt_pdata$GSE61166$Tissue_type
 )
-###
 
 # Clear patient ID
-filt_pdata$GSE61166$Patient_ID = gsub("Pancreatitis_tissues_of_Patient",
-                                      "", filt_pdata$GSE61166$Patient_ID)
-filt_pdata$GSE61166$Patient_ID = gsub("Pancreatic_tumors_of_Patient",
-                                      "", filt_pdata$GSE61166$Patient_ID)
+filt_pdata$GSE61166$Patient_ID = gsub("Pancreatitis_tissues_of_Patient", "", filt_pdata$GSE61166$Patient_ID)
+filt_pdata$GSE61166$Patient_ID = gsub("Pancreatic_tumors_of_Patient", "", filt_pdata$GSE61166$Patient_ID)
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE61166$Tissue_type = factor(x = filt_pdata$GSE61166$Tissue_type,
-                                         levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
-                                         labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
+                                         levels = c("chronic_pancreatitis", "normal", "tumor"),
+                                         labels = c("chronic_pancreatitis", "normal", "tumor"))
 filt_pdata$GSE61166$Gender = factor(x = filt_pdata$GSE61166$Gender,
                                     levels = c("female","male"),
                                     labels = c("female","male"))
@@ -174,38 +145,22 @@ filt_pdata[["GSE71989"]] = pdata$GSE71989 %>%
                 Tissue_type = "tissue subtype:ch1")
 
 # Change Tissue_type to chronic pancreatitis and normal
-for (i in 1:length(filt_pdata$GSE71989$Tissue_type)) {
-  if (filt_pdata$GSE71989$Tissue_type[i] == "CP") {
-    filt_pdata$GSE71989$Tissue_type[i] = "chronic_pancreatitis"
-  } 
-  if (filt_pdata$GSE71989$Tissue_type[i] == "normal pancreatic tissue") {
-    filt_pdata$GSE71989$Tissue_type[i] = "non_tumor"
-  } 
-  if (filt_pdata$GSE71989$Tissue_type[i] == "PDAC") {
-    filt_pdata$GSE71989$Tissue_type[i] = "tumor"
-  } 
-}; rm(i)
-
-### ARIS MODIFICATION ### (lines 177 - 187)
 filt_pdata$GSE71989$Tissue_type <- case_when(
   filt_pdata$GSE71989$Tissue_type == "CP" ~ "chronic_pancreatitis",
-  filt_pdata$GSE71989$Tissue_type == "normal pancreatic tissue" ~ "non_tumor",
+  filt_pdata$GSE71989$Tissue_type == "normal pancreatic tissue" ~ "normal",
   filt_pdata$GSE71989$Tissue_type == "PDAC" ~ "tumor",
   TRUE ~ filt_pdata$GSE71989$Tissue_type
 )
-###
 
 # Clear patient ID
-filt_pdata$GSE71989$Patient_ID = gsub(", human normal pancreatic tissue",
-                                      "", filt_pdata$GSE71989$Patient_ID)
-filt_pdata$GSE71989$Patient_ID = gsub(", human Chronic Pancreatitis tissue",
-                                      "", filt_pdata$GSE71989$Patient_ID)
+filt_pdata$GSE71989$Patient_ID = gsub(", human normal pancreatic tissue", "", filt_pdata$GSE71989$Patient_ID)
+filt_pdata$GSE71989$Patient_ID = gsub(", human Chronic Pancreatitis tissue", "", filt_pdata$GSE71989$Patient_ID)
 filt_pdata$GSE71989$Patient_ID = gsub(", human PDAC tissue", "", filt_pdata$GSE71989$Patient_ID)
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE71989$Tissue_type = factor(x = filt_pdata$GSE71989$Tissue_type,
-                                         levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
-                                         labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
+                                         levels = c("chronic_pancreatitis", "normal", "tumor"),
+                                         labels = c("chronic_pancreatitis", "normal", "tumor"))
 # NOTE: No age or gender information was provided
 
 ## -- GSE101462 -- ##
@@ -231,33 +186,9 @@ filt_pdata[["GSE101462"]] = pdata$GSE101462 %>%
                 Tissue_storage = "tissue storage:ch1")
 
 # Change Tissue_type to chronic pancreatitis and normal
-for (i in 1:length(filt_pdata$GSE101462$Tissue_type)) {
-  if (filt_pdata$GSE101462$Tissue_type[i] == "pancreatitis") {
-    filt_pdata$GSE101462$Tissue_type[i] = "chronic_pancreatitis"
-  } 
-  if (filt_pdata$GSE101462$Tissue_type[i] == "normal") {
-    filt_pdata$GSE101462$Tissue_type[i] = "non_tumor"
-  } 
-  if (filt_pdata$GSE101462$Tissue_type[i] == "PDAC") {
-    filt_pdata$GSE101462$Tissue_type[i] = "tumor"
-  } 
-}; rm(i)
-
-# Change Tissue_storage
-for (i in 1:length(filt_pdata$GSE101462$Tissue_storage)) {
-  if (filt_pdata$GSE101462$Tissue_storage[i] == "fresh frozen (FF)") {
-    filt_pdata$GSE101462$Tissue_storage[i] = "fresh_frozen"
-  } 
-  if (filt_pdata$GSE101462$Tissue_storage[i] == "formalin-fixed paraffin embedded (FFPE)") {
-    filt_pdata$GSE101462$Tissue_storage[i] = "formalin_fixed_paraffin_embedded"
-  } 
-}; rm(i)
-
-### ARIS MODIFICATION ### (lines 233 - 254)
-# Change Tissue_type to chronic pancreatitis and normal
-filt_pdata$GSE101462$Tissue_type <- case_when(
+filt_pdata$GSE101462$Tissue_type = case_when(
   filt_pdata$GSE101462$Tissue_type == "pancreatitis" ~ "chronic_pancreatitis",
-  filt_pdata$GSE101462$Tissue_type == "normal" ~ "non_tumor",
+  filt_pdata$GSE101462$Tissue_type == "normal" ~ "normal",
   filt_pdata$GSE101462$Tissue_type == "PDAC" ~ "tumor",
   TRUE ~ filt_pdata$GSE101462$Tissue_type
 )
@@ -268,12 +199,11 @@ filt_pdata$GSE101462$Tissue_storage <- case_when(
   filt_pdata$GSE101462$Tissue_storage == "formalin-fixed paraffin embedded (FFPE)" ~ "formalin_fixed_paraffin_embedded",
   TRUE ~ filt_pdata$GSE101462$Tissue_storage
 )
-###
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE101462$Tissue_type = factor(x = filt_pdata$GSE101462$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
+                                          levels = c("chronic_pancreatitis", "normal", "tumor"),
+                                          labels = c("chronic_pancreatitis", "normal", "tumor"))
 # NOTE: no age or gender information was provided
 
 ## -- GSE77858 -- ##
@@ -293,41 +223,22 @@ filt_pdata[["GSE77858"]] = pdata$GSE77858 %>%
                 Tissue_type = "morphology:ch2")
 
 # Change Tissue_type to chronic pancreatitis and normal
-for (i in 1:length(filt_pdata$GSE77858$Tissue_type)) {
-  if (filt_pdata$GSE77858$Tissue_type[i] == "Normal") {
-    filt_pdata$GSE77858$Tissue_type[i] = "non_tumor"
-  } 
-  if (filt_pdata$GSE77858$Tissue_type[i] == "Panreatitis") {
-    filt_pdata$GSE77858$Tissue_type[i] = "chronic_pancreatitis"
-  } 
-  if (filt_pdata$GSE77858$Tissue_type[i] == "Pancreatitis") {
-    filt_pdata$GSE77858$Tissue_type[i] = "chronic_pancreatitis"
-  } 
-  if (filt_pdata$GSE77858$Tissue_type[i] == "Tumor") {
-    filt_pdata$GSE77858$Tissue_type[i] = "tumor"
-  } 
-}; rm(i)
-
-### ARIS MODIFICATION ### (lines 296 - 309)
 filt_pdata$GSE77858$Tissue_type <- case_when(
-  filt_pdata$GSE77858$Tissue_type == "Normal" ~ "non_tumor",
+  filt_pdata$GSE77858$Tissue_type == "Normal" ~ "normal",
   filt_pdata$GSE77858$Tissue_type == "Panreatitis" ~ "chronic_pancreatitis",
   filt_pdata$GSE77858$Tissue_type == "Pancreatitis" ~ "chronic_pancreatitis",
   filt_pdata$GSE77858$Tissue_type == "Tumor" ~ "tumor",
   TRUE ~ filt_pdata$GSE77858$Tissue_type
 )
-###
 
 # Clear patient ID
-filt_pdata[["GSE77858"]]$Patient_ID = gsub("PancTuRef2 vs. ",
-                                           "", filt_pdata[["GSE77858"]]$Patient_ID)
-filt_pdata[["GSE77858"]]$Patient_ID = gsub("PancTuRef vs. ", 
-                                           "", filt_pdata[["GSE77858"]]$Patient_ID)
+filt_pdata[["GSE77858"]]$Patient_ID = gsub("PancTuRef2 vs. ", "", filt_pdata[["GSE77858"]]$Patient_ID)
+filt_pdata[["GSE77858"]]$Patient_ID = gsub("PancTuRef vs. ", "", filt_pdata[["GSE77858"]]$Patient_ID)
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE77858$Tissue_type = factor(x = filt_pdata$GSE77858$Tissue_type,
-                                         levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
-                                         labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
+                                         levels = c("chronic_pancreatitis", "normal", "tumor"),
+                                         labels = c("chronic_pancreatitis", "normal", "tumor"))
 
 ## -- full_pdata -- ##
 # Keep only information for Study, GEO_accession and Tissue_type
@@ -940,7 +851,7 @@ colnames(original_dists) <- NULL
 diag(original_dists) <- NA
 
 ann_colors <- list(
-  Tissue_type = c(chronic_pancreatitis = "deeppink4", non_tumor = "dodgerblue4", tumor = "gray"),
+  Tissue_type = c(chronic_pancreatitis = "deeppink4", normal = "dodgerblue4", tumor = "gray"),
   Study = c(GSE143754 = "darkseagreen", GSE61166 = "darkorange",
             GSE71989 = "darkcyan", GSE101462 = "darkred", GSE77858 = "darkmagenta")
 )
@@ -971,7 +882,7 @@ colnames(z_dists) <- NULL
 diag(z_dists) <- NA
 
 ann_colors <- list(
-  Tissue_type = c(chronic_pancreatitis = "deeppink4", non_tumor = "dodgerblue4", tumor = "gray"),
+  Tissue_type = c(chronic_pancreatitis = "deeppink4", normal = "dodgerblue4", tumor = "gray"),
   Study = c(GSE143754 = "darkseagreen", GSE61166 = "darkorange",
             GSE71989 = "darkcyan", GSE101462 = "darkred", GSE77858 = "darkmagenta")
 )
@@ -1003,7 +914,7 @@ official_df = official_df %>% dplyr::rename(EntrezGene.ID = gene_id, Gene.Symbol
 official_df$HGNC_Official = "Yes"
 official_df = official_df[-which(duplicated(official_df$Gene.Symbol)==T),]
 official_df = distinct(official_df)
- 
+
 alias = org.Hs.egALIAS2EG
 mapped_genes_alias = mappedkeys(alias)
 alias_df = as.data.frame(alias[mapped_genes_alias])
@@ -1016,16 +927,16 @@ ID_Map$EntrezGene.ID = as.numeric(ID_Map$EntrezGene.ID)
 ID_Map = ID_Map[order(ID_Map$EntrezGene.ID),] %>%
   dplyr::rename(probe=Gene.Symbol) %>%
   dplyr::select(probe, EntrezGene.ID, HGNC_Official)
- 
+
 # Aliases
 aliases_for_join = alias_df %>% dplyr::rename(Alias = Gene.Symbol)
 Aliases = official_df %>% inner_join(aliases_for_join,
                                      by = "EntrezGene.ID") %>%
- dplyr::select(Alias, Gene.Symbol, EntrezGene.ID) %>%
- dplyr::rename(probe = Alias, HGNC_Symbol = Gene.Symbol,
-               Entrez = EntrezGene.ID) %>%
- distinct()
- 
+  dplyr::select(Alias, Gene.Symbol, EntrezGene.ID) %>%
+  dplyr::rename(probe = Alias, HGNC_Symbol = Gene.Symbol,
+                Entrez = EntrezGene.ID) %>%
+  distinct()
+
 ID_Map$EntrezGene.ID = as.character(ID_Map$EntrezGene.ID)
 ID_Map = ID_Map %>% dplyr::rename(Gene.Symbol = probe)
 rm(alias, alias_df, aliases_for_join, official,
@@ -1033,13 +944,13 @@ rm(alias, alias_df, aliases_for_join, official,
 
 # Create design and contrast matrix
 design = model.matrix(~0 + full_pdata$Tissue_type + full_pdata$Study)
-colnames(design) = c("chronic_pancreatitis", "non_tumor", "tumor", 
+colnames(design) = c("chronic_pancreatitis", "normal", "tumor", 
                      "GSE143754", "GSE61166", "GSE71989",
                      "GSE77858") 
 rownames(design) = colnames(z_exprs_nonas)
-cont.matrix = makeContrasts(CPvsNormal = chronic_pancreatitis - non_tumor,
+cont.matrix = makeContrasts(CPvsNormal = chronic_pancreatitis - normal,
                             CPvsTumor = chronic_pancreatitis - tumor,
-                            TumorvsNormal = tumor - non_tumor)
+                            TumorvsNormal = tumor - normal)
 
 # Limma
 z_fit = lmFit(z_exprs_nonas, design)
@@ -1161,68 +1072,11 @@ names(keyvals.colours) = names(DE_maps)
 
 # CP vs. Normal samples
 volcano_CPvsNormal = EnhancedVolcano(DE_maps[["CPvsNormal"]],
-                                       lab = DE_maps[["CPvsNormal"]][, "Gene.Symbol"],
-                                       caption = NULL,
-                                       x = 'logFC',
-                                       y = 'adj.P.Val',
-                                       title = "Chronic Pancreatitis vs. Normal",
-                                       pCutoff = 0.05,
-                                       cutoffLineType = "dashed",
-                                       cutoffLineWidth = 0.3,
-                                       cutoffLineCol = "black",
-                                       FCcutoff = 1,
-                                       colCustom = keyvals.colour,
-                                       colAlpha = 0.7,
-                                       xlim = c(-5, 5),
-                                       ylab = bquote(bold(-log[10]("BH adj. p-value"))),
-                                       xlab = "\nDifferential expression",
-                                       pointSize = 1.5,
-                                       axisLabSize = 7,
-                                       subtitle = NULL,
-                                       labSize = 2,
-                                       selectLab = DE_maps[["CPvsNormal"]][1:20, "Gene.Symbol"], # top 20 genes
-                                       legendLabSize = 6,
-                                       legendIconSize = 4,
-                                       labFace = "bold",
-                                       boxedLabels = TRUE,
-                                       drawConnectors = TRUE,
-                                       typeConnectors = "closed",
-                                       arrowheads = FALSE,
-                                       widthConnectors = 0.3,
-                                       max.overlaps = Inf,
-                                       legendLabels = c("NS", "|DE| > 1 s.d.", 
-                                                        "p.adj < 0.05", 
-                                                        "p.adj < 0.05 & |DE| > 1 s.d."))+
-  theme(panel.grid.minor = element_blank(),
-        panel.grid.major = element_line(linewidth = 0.4),
-        plot.title = element_text(size = 12, face = "bold"),
-        axis.title = element_text(face = "bold", size = 10),
-        axis.line = element_line(colour = "black", linewidth = 0.4),
-        axis.ticks = element_line(colour = "black", linewidth = 0.4),
-        axis.ticks.length = unit(1, units = "mm"),
-        legend.position = "bottom",
-        #legend.text = element_text(size = 8),
-        #legend.title = element_blank(),
-        #legend.margin = ggplot2::margin(0, 0, 0, 0, unit = "mm"),
-        #legend.spacing.y = unit(1, units = "mm"),
-        legend.spacing.x = unit(0.3, units = "mm")#,
-        #legend.background = element_blank(),
-        #legend.box.background = element_rect(colour = "black"))
-  )
-volcano_CPvsNormal
-ggsave(filename = "CPvsNormal_Volcano.tiff",
-       path = "DGEA/GSE_microarrays/", 
-       width = 100, height = 142, device = 'tiff', units = "mm",
-       dpi = 700, compression = "lzw")
-dev.off()
-
-# CP vs. Tumor samples
-volcano_CPvsTumor = EnhancedVolcano(DE_maps[["CPvsTumor"]],
-                                     lab = DE_maps[["CPvsTumor"]][, "Gene.Symbol"],
+                                     lab = DE_maps[["CPvsNormal"]][, "Gene.Symbol"],
                                      caption = NULL,
                                      x = 'logFC',
                                      y = 'adj.P.Val',
-                                     title = "Chronic Pancreatitis vs. PDAC",
+                                     title = "Chronic Pancreatitis vs. Normal",
                                      pCutoff = 0.05,
                                      cutoffLineType = "dashed",
                                      cutoffLineWidth = 0.3,
@@ -1237,7 +1091,7 @@ volcano_CPvsTumor = EnhancedVolcano(DE_maps[["CPvsTumor"]],
                                      axisLabSize = 7,
                                      subtitle = NULL,
                                      labSize = 2,
-                                     selectLab = DE_maps[["CPvsTumor"]][1:20, "Gene.Symbol"], # top 20 genes
+                                     selectLab = DE_maps[["CPvsNormal"]][1:20, "Gene.Symbol"], # top 20 genes
                                      legendLabSize = 6,
                                      legendIconSize = 4,
                                      labFace = "bold",
@@ -1266,16 +1120,16 @@ volcano_CPvsTumor = EnhancedVolcano(DE_maps[["CPvsTumor"]],
         #legend.background = element_blank(),
         #legend.box.background = element_rect(colour = "black"))
   )
-volcano_CPvsTumor
-ggsave(filename = "CPvsTumor_Volcano.tiff",
+volcano_CPvsNormal
+ggsave(filename = "CPvsNormal_Volcano.tiff",
        path = "DGEA/GSE_microarrays/", 
        width = 100, height = 142, device = 'tiff', units = "mm",
        dpi = 700, compression = "lzw")
 dev.off()
 
-# Tumor vs. Normal samples
-volcano_TumorvsNormal = EnhancedVolcano(DE_maps[["TumorvsNormal"]],
-                                    lab = DE_maps[["TumorvsNormal"]][, "Gene.Symbol"],
+# CP vs. Tumor samples
+volcano_CPvsTumor = EnhancedVolcano(DE_maps[["CPvsTumor"]],
+                                    lab = DE_maps[["CPvsTumor"]][, "Gene.Symbol"],
                                     caption = NULL,
                                     x = 'logFC',
                                     y = 'adj.P.Val',
@@ -1294,7 +1148,7 @@ volcano_TumorvsNormal = EnhancedVolcano(DE_maps[["TumorvsNormal"]],
                                     axisLabSize = 7,
                                     subtitle = NULL,
                                     labSize = 2,
-                                    selectLab = DE_maps[["TumorvsNormal"]][1:20, "Gene.Symbol"], # top 20 genes
+                                    selectLab = DE_maps[["CPvsTumor"]][1:20, "Gene.Symbol"], # top 20 genes
                                     legendLabSize = 6,
                                     legendIconSize = 4,
                                     labFace = "bold",
@@ -1323,6 +1177,63 @@ volcano_TumorvsNormal = EnhancedVolcano(DE_maps[["TumorvsNormal"]],
         #legend.background = element_blank(),
         #legend.box.background = element_rect(colour = "black"))
   )
+volcano_CPvsTumor
+ggsave(filename = "CPvsTumor_Volcano.tiff",
+       path = "DGEA/GSE_microarrays/", 
+       width = 100, height = 142, device = 'tiff', units = "mm",
+       dpi = 700, compression = "lzw")
+dev.off()
+
+# Tumor vs. Normal samples
+volcano_TumorvsNormal = EnhancedVolcano(DE_maps[["TumorvsNormal"]],
+                                        lab = DE_maps[["TumorvsNormal"]][, "Gene.Symbol"],
+                                        caption = NULL,
+                                        x = 'logFC',
+                                        y = 'adj.P.Val',
+                                        title = "Chronic Pancreatitis vs. PDAC",
+                                        pCutoff = 0.05,
+                                        cutoffLineType = "dashed",
+                                        cutoffLineWidth = 0.3,
+                                        cutoffLineCol = "black",
+                                        FCcutoff = 1,
+                                        colCustom = keyvals.colour,
+                                        colAlpha = 0.7,
+                                        xlim = c(-5, 5),
+                                        ylab = bquote(bold(-log[10]("BH adj. p-value"))),
+                                        xlab = "\nDifferential expression",
+                                        pointSize = 1.5,
+                                        axisLabSize = 7,
+                                        subtitle = NULL,
+                                        labSize = 2,
+                                        selectLab = DE_maps[["TumorvsNormal"]][1:20, "Gene.Symbol"], # top 20 genes
+                                        legendLabSize = 6,
+                                        legendIconSize = 4,
+                                        labFace = "bold",
+                                        boxedLabels = TRUE,
+                                        drawConnectors = TRUE,
+                                        typeConnectors = "closed",
+                                        arrowheads = FALSE,
+                                        widthConnectors = 0.3,
+                                        max.overlaps = Inf,
+                                        legendLabels = c("NS", "|DE| > 1 s.d.", 
+                                                         "p.adj < 0.05", 
+                                                         "p.adj < 0.05 & |DE| > 1 s.d."))+
+  theme(panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(linewidth = 0.4),
+        plot.title = element_text(size = 12, face = "bold"),
+        axis.title = element_text(face = "bold", size = 10),
+        axis.line = element_line(colour = "black", linewidth = 0.4),
+        axis.ticks = element_line(colour = "black", linewidth = 0.4),
+        axis.ticks.length = unit(1, units = "mm"),
+        legend.position = "bottom",
+        #legend.text = element_text(size = 8),
+        #legend.title = element_blank(),
+        #legend.margin = ggplot2::margin(0, 0, 0, 0, unit = "mm"),
+        #legend.spacing.y = unit(1, units = "mm"),
+        legend.spacing.x = unit(0.3, units = "mm")#,
+        #legend.background = element_blank(),
+        #legend.box.background = element_rect(colour = "black"))
+  )
 volcano_TumorvsNormal
 ggsave(filename = "TumorvsNormal_Volcano.tiff",
        path = "DGEA/GSE_microarrays/", 
@@ -1330,7 +1241,7 @@ ggsave(filename = "TumorvsNormal_Volcano.tiff",
        dpi = 700, compression = "lzw")
 dev.off()
 
- ##### Union #####
+##### Union #####
 # # In this section we perform DGEA on the union of the gene expression matrices,
 # # not the intersection, in order to keep all genes from all
 # # platforms. NA's will be introduced in this manner, but limma ignores them
@@ -1350,7 +1261,7 @@ dev.off()
 # 
 # # Design and contrast matrix
 # design_full = model.matrix(~0 + full_pdata$Tissue_type + full_pdata$Study)
-# colnames(design_full) = c("chronic_pancreatitis", "non_tumor",
+# colnames(design_full) = c("chronic_pancreatitis", "normal",
 #                           "GSE101462", "GSE143754", "GSE61166", "GSE71989", "GSE77858", "GSE91035")
 # rownames(design_full) = colnames(union_z_exprs_final)
 # cont.matrix_full = makeContrasts(onevsnormal = (Stage_1a + Stage_1b)/2 - normal, 

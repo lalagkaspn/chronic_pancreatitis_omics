@@ -64,20 +64,16 @@ filt_pdata[["GSE194331"]] = pdata$GSE194331 %>%
 
 # Change Tissue_type to chronic pancreatitis, tumor and normal
 table(filt_pdata$GSE194331$Tissue_type)
-filt_pdata$GSE194331$Tissue_type = gsub("Healthy control", "non_tumor",
-                                        filt_pdata$GSE194331$Tissue_type)
-filt_pdata$GSE194331$Tissue_type = gsub("Mild AP", "chronic_pancreatitis",
-                                        filt_pdata$GSE194331$Tissue_type)
-filt_pdata$GSE194331$Tissue_type = gsub("Moderately-severe AP", "chronic_pancreatitis", 
-                                        filt_pdata$GSE194331$Tissue_type)
-filt_pdata$GSE194331$Tissue_type = gsub("Severe AP", "chronic_pancreatitis",
-                                        filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Healthy control", "normal", filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Mild AP", "chronic_pancreatitis", filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Moderately-severe AP", "chronic_pancreatitis",  filt_pdata$GSE194331$Tissue_type)
+filt_pdata$GSE194331$Tissue_type = gsub("Severe AP", "chronic_pancreatitis", filt_pdata$GSE194331$Tissue_type)
 table(filt_pdata$GSE194331$Tissue_type)
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE194331$Tissue_type = factor(x = filt_pdata$GSE194331$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
+                                          levels = c("chronic_pancreatitis", "normal", "tumor"),
+                                          labels = c("chronic_pancreatitis", "normal", "tumor"))
 
 # Check overlap of GSE samples with the NCBI raw count dataframe
 length(intersect(filt_pdata$GSE194331$GEO_accession, colnames(GSE194331_raw_counts)[-1])) # 119 --> 100% overlap
@@ -108,18 +104,18 @@ filt_pdata[["GSE133684"]] = pdata$GSE133684 %>%
 # Change Tissue_type to chronic pancreatitis and normal
 table(filt_pdata$GSE133684$Tissue_type)
 filt_pdata$GSE133684$Tissue_type = gsub("PDAC", "tumor", filt_pdata$GSE133684$Tissue_type)
-filt_pdata$GSE133684$Tissue_type = gsub("healthy", "non_tumor", filt_pdata$GSE133684$Tissue_type)
+filt_pdata$GSE133684$Tissue_type = gsub("healthy", "normal", filt_pdata$GSE133684$Tissue_type)
 table(filt_pdata$GSE133684$Tissue_type)
 
 # Add to filt_pdata the CP patient IDs
 cp_patients_ids = setdiff(colnames(GSE133684_tpm), filt_pdata$GSE133684$Patient_ID)[-1]
-cp_data = data.frame(GEO_accession = "", Patient_ID = cp_patients_ids, Platform = "GPL20795", Tissue_type = "chronic_pancreatitis")
+cp_data = data.frame(GEO_accession = "not_available", Patient_ID = cp_patients_ids, Platform = "GPL20795", Tissue_type = "chronic_pancreatitis")
 filt_pdata$GSE133684 = rbind(filt_pdata$GSE133684, cp_data) ; rm(cp_patients_ids, cp_data)
 
 # Transform to factors with consistent universal levels
 filt_pdata$GSE133684$Tissue_type = factor(x = filt_pdata$GSE133684$Tissue_type,
-                                          levels = c("chronic_pancreatitis", "non_tumor", "tumor"),
-                                          labels = c("chronic_pancreatitis", "non_tumor", "tumor"))
+                                          levels = c("chronic_pancreatitis", "normal", "tumor"),
+                                          labels = c("chronic_pancreatitis", "normal", "tumor"))
 
 pdata194331 = filt_pdata$GSE194331 %>%
   dplyr::select(GEO_accession, Tissue_type) %>%
@@ -299,11 +295,6 @@ original_exprs_nonas = na.omit(original_exprs) # 23722 x 620
 # Keeping all samples in our full_pdata object
 original_exprs_nonas = original_exprs_nonas[, full_pdata$GEO_accession] # 23722 x 620
 
-## Save intermediate files ##
-saveRDS(esets, "intermediate_files/GSE_RNAseq/esets_raw.RDS")
-saveRDS(filt_pdata, "intermediate_files/GSE_RNAseq/filt_pdata.RDS")
-saveRDS(pdata, "intermediate_files/GSE_RNAseq/pdata_raw.RDS")
-
 ##### z-score-transformation #####
 # KBZ transformation method ( https:://www.biostars.org/p/283083/ )
 z = list()
@@ -321,21 +312,24 @@ for(i in 1:length(esets)){
 }; rm(i)
 
 # Joining in one expression matrix: z-score normalized version
-for (i in 1:length(z)){
-  z[[i]]$EntrezGene.ID = as.character(z[[i]]$EntrezGene.ID)
-  z[[i]] = z[[i]][,c("EntrezGene.ID", 
-                     intersect(colnames(z[[i]]),
-                               filt_pdata[[i]]$GEO_accession))]
-}
-z_exprs = z[[1]] %>% inner_join(z[[2]], by = "EntrezGene.ID")
+## Separate runs because the 2nd study does not have GSM sample IDs for the chronic_pancreatitis samples --> i use the Patient_ID column for the intersect instead of the GSM
+z[[1]]$EntrezGene.ID = as.character(z[[1]]$EntrezGene.ID)
+z[[1]] = z[[1]][,c("EntrezGene.ID", 
+                   intersect(colnames(z[[1]]),
+                             filt_pdata[[1]]$GEO_accession))]
+z[[2]]$EntrezGene.ID = as.character(z[[2]]$EntrezGene.ID)
+z[[2]] = z[[2]][,c("EntrezGene.ID", 
+                   intersect(colnames(z[[2]]),
+                             filt_pdata[[2]]$Patient_ID))]
+z_exprs = z[[1]] %>% inner_join(z[[2]], by = "EntrezGene.ID") %>%
   dplyr::select(EntrezGene.ID, everything())
 
 rownames(z_exprs) = z_exprs$EntrezGene.ID
-z_exprs = as.matrix(z_exprs %>% dplyr::select(-EntrezGene.ID)) # 13,744 x 165
+z_exprs = as.matrix(z_exprs %>% dplyr::select(-EntrezGene.ID)) # 23,722 x 620
 # Making sure we do not have NAs in any row
 z_exprs = z_exprs[rowSums(is.na(z_exprs)) != ncol(z_exprs), ]
-z_exprs_nonas = na.omit(z_exprs) # 13,744 x 165
-z_exprs_nonas = z_exprs_nonas[, full_pdata$GEO_accession] # 13,744 x 165
+z_exprs_nonas = na.omit(z_exprs) # 20,550 x 620
+z_exprs_nonas = z_exprs_nonas[, full_pdata$GEO_accession] # 20,550 x 620
 
 # Multidimensional scaling plot: original matrix #####
 original_mds = plotMDS(original_exprs_nonas)
@@ -587,7 +581,7 @@ colnames(original_dists) <- NULL
 diag(original_dists) <- NA
 
 ann_colors <- list(
-  Tissue_type = c(chronic_pancreatitis = "deeppink4", non_tumor = "dodgerblue4", tumor = "gray"),
+  Tissue_type = c(chronic_pancreatitis = "deeppink4", normal = "dodgerblue4", tumor = "gray"),
   Study = c(GSE194331 = "darkseagreen", GSE133684 = "darkorange")
 )
 
@@ -617,7 +611,7 @@ colnames(z_dists) <- NULL
 diag(z_dists) <- NA
 
 ann_colors <- list(
-  Tissue_type = c(chronic_pancreatitis = "deeppink4", non_tumor = "dodgerblue4", tumor = "gray"),
+  Tissue_type = c(chronic_pancreatitis = "deeppink4", normal = "dodgerblue4", tumor = "gray"),
   Study = c(GSE194331 = "darkseagreen", GSE133684 = "darkorange")
 )
 
