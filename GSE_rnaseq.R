@@ -10,6 +10,17 @@ library(ggplot2)
 library(reshape2)
 library(pheatmap)
 
+## Set type for image compression based on operating system
+## For macOS, X11 installation is required (link: https://www.xquartz.org/)
+# if Windows OS
+if (Sys.info()['sysname'] == "Windows") {
+  type_compression = "windows"
+} 
+# if macOS
+if (Sys.info()['sysname'] == "Darwin") {
+  type_compression = "cairo"
+} 
+
 ##### Downloading data #####
 datasets = c("GSE194331", "GSE133684")
 
@@ -220,8 +231,7 @@ GSE194331_tpm = apply(GSE194331_rpk, 2,
 GSE194331_tpm = as.data.frame(GSE194331_tpm)
 GSE194331_tpm$GeneID = GSE194331_raw_counts$GeneID
 GSE194331_tpm = GSE194331_tpm %>% 
-  dplyr::relocate(GeneID, .before = GSM5833563) %>%
-  dplyr::rename(ENTREZ_GENE_ID = GeneID)
+  dplyr::select(ENTREZ_GENE_ID = GeneID, everything())
 
 rm(GSE194331_rpk, ah, edb, temp, transcript_lengths, 
    transcript_lengths_in_raw_counts, transcripts_data, genes_data, genes_map, 
@@ -374,7 +384,7 @@ original_MDS
 ggsave(filename = "Original_MDS.tiff",
        path = "QC/GSE_RNAseq", 
        width = 1920, height = 1080, device = 'tiff', units = "px",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 # MDS: normalized matrix
@@ -419,7 +429,7 @@ KBZ_MDS_plot
 ggsave(filename = "z_MDS.tiff",
        path = "QC/GSE_RNAseq", 
        width = 1920, height = 1080, device = 'tiff', units = "px",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 # Defining the multiplot function
@@ -473,7 +483,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 # End of multiplot function
 
 tiff("QC/GSE_RNAseq/MDS_multiplot.tiff", 
-     width = 1920, height = 2160, res = 700, compression = "lzw")
+     width = 1920, height = 2160, res = 700, compression = "lzw", type = type_compression)
 multiplot(original_MDS, KBZ_MDS_plot, cols = 1)
 m = ggplot(multiplot(original_MDS, KBZ_MDS_plot, cols = 1))
 dev.off(); rm(m)
@@ -510,7 +520,7 @@ original_boxplot
 ggsave(filename = "Original_boxplot.tiff",
        path = "QC/GSE_RNAseq/", 
        width = 7680, height = 3240, device = 'tiff', units = "px",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 # Global expression boxplot: z-score normalised matrix
@@ -545,11 +555,11 @@ KBZ_boxplot
 ggsave(filename = "z_boxplot.tiff",
        path = "QC/GSE_RNAseq/", 
        width = 7680, height = 3240, device = 'tiff', units = "px",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 tiff("QC/GSE_RNAseq/Boxplot_multiplot.tiff", 
-     width = 7680, height = 6480, res = 700, compression = "lzw")
+     width = 7680, height = 6480, res = 700, compression = "lzw", type = type_compression)
 multiplot(original_boxplot, KBZ_boxplot, cols = 1)
 m = ggplot(multiplot(original_boxplot, KBZ_boxplot, cols = 1))
 dev.off(); rm(m)
@@ -563,7 +573,7 @@ save_pheatmap_png <- function(x, filename, width=2600*2, height=1800*2, res = 70
 }
 
 save_pheatmap_tiff <- function(x, filename, width=2600*2, height=1800*2, res = 700) {
-  tiff(filename, width = width, height = height, res = res, compression = "lzw")
+  tiff(filename, width = width, height = height, res = res, compression = "lzw", type = type_compression)
   grid::grid.newpage()
   grid::grid.draw(x$gtable)
   dev.off()
@@ -808,9 +818,9 @@ volcano_CPvsNormal = EnhancedVolcano(DE_maps[["CPvsNormal"]],
   )
 volcano_CPvsNormal
 ggsave(filename = "CPvsNormal_Volcano.tiff",
-       path = "DGEA/GSE_microarrays/", 
+       path = "DGEA/GSE_RNAseq/", 
        width = 100, height = 142, device = 'tiff', units = "mm",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 # CP vs. Tumor samples
@@ -825,7 +835,7 @@ volcano_CPvsTumor = EnhancedVolcano(DE_maps[["CPvsTumor"]],
                                     cutoffLineWidth = 0.3,
                                     cutoffLineCol = "black",
                                     FCcutoff = 1,
-                                    colCustom = keyvals.colour,
+                                    colCustom = keyvals.colours[["CPvsTumor"]],
                                     colAlpha = 0.7,
                                     xlim = c(-5, 5),
                                     ylab = bquote(bold(-log[10]("BH adj. p-value"))),
@@ -865,9 +875,9 @@ volcano_CPvsTumor = EnhancedVolcano(DE_maps[["CPvsTumor"]],
   )
 volcano_CPvsTumor
 ggsave(filename = "CPvsTumor_Volcano.tiff",
-       path = "DGEA/GSE_microarrays/", 
+       path = "DGEA/GSE_RNAseq/", 
        width = 100, height = 142, device = 'tiff', units = "mm",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 # Tumor vs. Normal samples
@@ -876,13 +886,13 @@ volcano_TumorvsNormal = EnhancedVolcano(DE_maps[["TumorvsNormal"]],
                                         caption = NULL,
                                         x = 'logFC',
                                         y = 'adj.P.Val',
-                                        title = "Chronic Pancreatitis vs. PDAC",
+                                        title = "PDAC vs. Normal",
                                         pCutoff = 0.05,
                                         cutoffLineType = "dashed",
                                         cutoffLineWidth = 0.3,
                                         cutoffLineCol = "black",
                                         FCcutoff = 1,
-                                        colCustom = keyvals.colour,
+                                        colCustom = keyvals.colours[["TumorvsNormal"]],
                                         colAlpha = 0.7,
                                         xlim = c(-5, 5),
                                         ylab = bquote(bold(-log[10]("BH adj. p-value"))),
@@ -922,8 +932,11 @@ volcano_TumorvsNormal = EnhancedVolcano(DE_maps[["TumorvsNormal"]],
   )
 volcano_TumorvsNormal
 ggsave(filename = "TumorvsNormal_Volcano.tiff",
-       path = "DGEA/GSE_microarrays/", 
+       path = "DGEA/GSE_RNAseq/", 
        width = 100, height = 142, device = 'tiff', units = "mm",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
+# ---------------------------------------- #
+# ---------------------------------------- #
+# ---------------------------------------- #
