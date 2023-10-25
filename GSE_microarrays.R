@@ -14,6 +14,17 @@ library(openxlsx)
 library(EnhancedVolcano)
 library(impute)
 
+## Set type for image compression based on operating system
+## For macOS, X11 installation is required (link: https://www.xquartz.org/)
+# if Windows OS
+if (Sys.info()['sysname'] == "Windows") {
+  type_compression = "windows"
+} 
+# if macOS
+if (Sys.info()['sysname'] == "Darwin") {
+  type_compression = "cairo"
+} 
+
 ##### Downloading data #####
 # Vector with datasets to download from GEO
 datasets = c("GSE143754", "GSE61166", "GSE71989", "GSE101462", "GSE77858")
@@ -408,29 +419,15 @@ mapped_blastn = mapped_blastn[order(mapped_blastn$probe),]
 mapped_blastn$unique_Entrez_perc = NA
 
 # Add a column to filter as described previously
-for (i in 1:nrow(mapped_blastn)){
-  if (length(unique(mapped_blastn$ENTREZ_GENE_ID[mapped_blastn$probe == 
-                                                 mapped_blastn$probe[i]])) == 1) {
-    mapped_blastn$unique_Entrez_perc[i] = 100
-  } else {
-    mapped_blastn$unique_Entrez_perc[i] = 100*length(which(mapped_blastn$ENTREZ_GENE_ID[mapped_blastn$probe == 
-                                                                                          mapped_blastn$probe[i]] == mapped_blastn$ENTREZ_GENE_ID[i]))/
-      nrow(mapped_blastn[mapped_blastn$probe == mapped_blastn$probe[i],])
-  }
-  cat(i, "\n")
-} ; rm(i)
-
-### ARIS MODIFICATION ### (lines 500 - 510) --OPTIONAL
-mapped_blastn <- mapped_blastn %>%
+mapped_blastn = mapped_blastn %>% 
   group_by(probe) %>%
-  mutate(total = n(),
-         matching_entrez = sum(ENTREZ_GENE_ID == first(ENTREZ_GENE_ID)),
-         unique_Entrez_perc = if_else(n_distinct(ENTREZ_GENE_ID) == 1, 
-                                      100, 
-                                      100 * matching_entrez / total)) %>%
+  mutate(total = n()) %>%
   ungroup() %>%
-  select(-total, -matching_entrez)
-###
+  group_by(probe, ENTREZ_GENE_ID) %>%
+  mutate(matching_entrez = n()) %>%
+  mutate(unique_Entrez_perc = (matching_entrez / total) * 100) %>%
+  ungroup() %>%
+  dplyr::select(-total, -matching_entrez)
 
 # We now keep everything with unique Entrez mapping percentage over 50%.
 # That is guaranteed to keep one Entrez ID for each probe and discard probes 
@@ -638,7 +635,7 @@ original_MDS
 ggsave(filename = "Original_MDS.tiff",
        path = "QC/GSE_microarrays", 
        width = 1920, height = 1080, device = 'tiff', units = "px",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 # Multidimensional scaling plot: z-score normalised matrix
@@ -683,7 +680,7 @@ KBZ_MDS_plot
 ggsave(filename = "z_MDS.tiff",
        path = "QC/GSE_microarrays", 
        width = 1920, height = 1080, device = 'tiff', units = "px",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 # Defining the multiplot function
@@ -737,7 +734,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 # End of multiplot function
 
 tiff("QC/GSE_microarrays/MDS_multiplot.tiff", 
-     width = 1920, height = 2160, res = 700, compression = "lzw")
+     width = 1920, height = 2160, res = 700, compression = "lzw", type = type_compression)
 multiplot(original_MDS, KBZ_MDS_plot, cols = 1)
 m = ggplot(multiplot(original_MDS, KBZ_MDS_plot, cols = 1))
 dev.off(); rm(m)
@@ -777,7 +774,7 @@ original_boxplot
 ggsave(filename = "Original_boxplot.tiff",
        path = "QC/GSE_microarrays/", 
        width = 7680, height = 3240, device = 'tiff', units = "px",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 # Global expression boxplot: z-score normalised matrix
@@ -815,11 +812,11 @@ KBZ_boxplot
 ggsave(filename = "z_boxplot.tiff",
        path = "QC/GSE_microarrays/", 
        width = 7680, height = 3240, device = 'tiff', units = "px",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 tiff("QC/GSE_microarrays/Boxplot_multiplot.tiff", 
-     width = 7680, height = 6480, res = 700, compression = "lzw")
+     width = 7680, height = 6480, res = 700, compression = "lzw", type = type_compression)
 multiplot(original_boxplot, KBZ_boxplot, cols = 1)
 m = ggplot(multiplot(original_boxplot, KBZ_boxplot, cols = 1))
 dev.off(); rm(m)
@@ -833,7 +830,7 @@ save_pheatmap_png <- function(x, filename, width=2600*2, height=1800*2, res = 70
 }
 
 save_pheatmap_tiff <- function(x, filename, width=2600*2, height=1800*2, res = 700) {
-  tiff(filename, width = width, height = height, res = res, compression = "lzw")
+  tiff(filename, width = width, height = height, res = res, compression = "lzw", type = type_compression)
   grid::grid.newpage()
   grid::grid.draw(x$gtable)
   dev.off()
@@ -950,7 +947,8 @@ colnames(design) = c("chronic_pancreatitis", "normal", "tumor",
 rownames(design) = colnames(z_exprs_nonas)
 cont.matrix = makeContrasts(CPvsNormal = chronic_pancreatitis - normal,
                             CPvsTumor = chronic_pancreatitis - tumor,
-                            TumorvsNormal = tumor - normal)
+                            TumorvsNormal = tumor - normal,
+                            levels = design)
 
 # Limma
 z_fit = lmFit(z_exprs_nonas, design)
@@ -1009,48 +1007,6 @@ for (i in 1:ncol(z_fit2)){
 saveWorkbook(DGEA_topTables, "DGEA/GSE_microarrays/DGEA_results.xlsx", overwrite = TRUE)
 names(DE_maps) = colnames(z_fit2)
 
-### ARIS MODIFICATION ON ARIS' CODE ### (lines 1055-1097)
-### CHECK FOR SPEED AND OUTPUT ###
-library(purrr)
-
-process_column <- function(col_name) {
-  z_DE <- as.data.frame(topTable(z_fit2, adjust.method="BH", number = Inf, coef = col_name))
-  z_DE$EntrezGene.ID <- rownames(z_DE)
-  
-  # Annotation with official gene symbols
-  z_DE_mapped <- z_DE %>%
-    left_join(ID_Map, by = "EntrezGene.ID") %>%
-    mutate(
-      Filter = case_when(
-        is.na(HGNC_Official) ~ "Keep",
-        HGNC_Official == "Yes" ~ "Keep",
-        HGNC_Official == "No" & 
-          length(unique(HGNC_Official[EntrezGene.ID == first(EntrezGene.ID)])) > 1 ~ "Discard",
-        TRUE ~ "Keep"
-      ),
-      Gene.Symbol = case_when(
-        Filter == "Keep" & is.na(Gene.Symbol) ~ as.character(EntrezGene.ID),
-        TRUE ~ Gene.Symbol
-      )
-    ) %>%
-    filter(Filter == "Keep") %>%
-    select(EntrezGene.ID, Gene.Symbol, everything(), -Filter) %>%
-    distinct() %>%
-    arrange(adj.P.Val)
-  
-  rownames(z_DE_mapped) <- z_DE_mapped$EntrezGene.ID
-  addWorksheet(DGEA_topTables, col_name)
-  writeData(DGEA_topTables, col_name, z_DE_mapped)
-  
-  return(z_DE_mapped)
-}
-
-DE_maps <- purrr::map(colnames(z_fit2), process_column)
-
-saveWorkbook(DGEA_topTables, "DGEA/GSE_microarrays/DGEA_results.xlsx", overwrite = TRUE)
-names(DE_maps) = colnames(z_fit2)
-###
-
 ##### Volcano plots #####
 # create custom key-value pairs for stat. sig genes (p.adj < 0.05) and n.s genes
 keyvals.colours = list()
@@ -1082,7 +1038,7 @@ volcano_CPvsNormal = EnhancedVolcano(DE_maps[["CPvsNormal"]],
                                      cutoffLineWidth = 0.3,
                                      cutoffLineCol = "black",
                                      FCcutoff = 1,
-                                     colCustom = keyvals.colour,
+                                     colCustom = keyvals.colours[["CPvsNormal"]],
                                      colAlpha = 0.7,
                                      xlim = c(-5, 5),
                                      ylab = bquote(bold(-log[10]("BH adj. p-value"))),
@@ -1124,7 +1080,7 @@ volcano_CPvsNormal
 ggsave(filename = "CPvsNormal_Volcano.tiff",
        path = "DGEA/GSE_microarrays/", 
        width = 100, height = 142, device = 'tiff', units = "mm",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 # CP vs. Tumor samples
@@ -1139,7 +1095,7 @@ volcano_CPvsTumor = EnhancedVolcano(DE_maps[["CPvsTumor"]],
                                     cutoffLineWidth = 0.3,
                                     cutoffLineCol = "black",
                                     FCcutoff = 1,
-                                    colCustom = keyvals.colour,
+                                    colCustom = keyvals.colours[["CPvsTumor"]],
                                     colAlpha = 0.7,
                                     xlim = c(-5, 5),
                                     ylab = bquote(bold(-log[10]("BH adj. p-value"))),
@@ -1181,7 +1137,7 @@ volcano_CPvsTumor
 ggsave(filename = "CPvsTumor_Volcano.tiff",
        path = "DGEA/GSE_microarrays/", 
        width = 100, height = 142, device = 'tiff', units = "mm",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
 # Tumor vs. Normal samples
@@ -1196,7 +1152,7 @@ volcano_TumorvsNormal = EnhancedVolcano(DE_maps[["TumorvsNormal"]],
                                         cutoffLineWidth = 0.3,
                                         cutoffLineCol = "black",
                                         FCcutoff = 1,
-                                        colCustom = keyvals.colour,
+                                        colCustom = keyvals.colours[["TumorvsNormal"]],
                                         colAlpha = 0.7,
                                         xlim = c(-5, 5),
                                         ylab = bquote(bold(-log[10]("BH adj. p-value"))),
@@ -1238,642 +1194,7 @@ volcano_TumorvsNormal
 ggsave(filename = "TumorvsNormal_Volcano.tiff",
        path = "DGEA/GSE_microarrays/", 
        width = 100, height = 142, device = 'tiff', units = "mm",
-       dpi = 700, compression = "lzw")
+       dpi = 700, compression = "lzw", type = type_compression)
 dev.off()
 
-##### Union #####
-# # In this section we perform DGEA on the union of the gene expression matrices,
-# # not the intersection, in order to keep all genes from all
-# # platforms. NA's will be introduced in this manner, but limma ignores them
-# # during model fitting.
-# 
-# # Generating our union z-score matrix
-# union_z_exprs = z[[1]] %>% full_join(z[[2]], by = "EntrezGene.ID") %>%
-#   full_join(z[[3]], by = "EntrezGene.ID") %>%
-#   full_join(z[[4]], by = "EntrezGene.ID") %>%
-#   full_join(z[[5]], by = "EntrezGene.ID") %>%
-#   full_join(z[[6]], by = "EntrezGene.ID") %>%
-#   dplyr::select(EntrezGene.ID, everything())
-# 
-# rownames(union_z_exprs) = union_z_exprs$EntrezGene.ID
-# union_z_exprs = as.matrix(union_z_exprs %>% dplyr::select(-EntrezGene.ID)) # 37969 x 73
-# union_z_exprs_final = union_z_exprs[, full_pdata$GEO_accession] # 37969 x 73
-# 
-# # Design and contrast matrix
-# design_full = model.matrix(~0 + full_pdata$Tissue_type + full_pdata$Study)
-# colnames(design_full) = c("chronic_pancreatitis", "normal",
-#                           "GSE101462", "GSE143754", "GSE61166", "GSE71989", "GSE77858", "GSE91035")
-# rownames(design_full) = colnames(union_z_exprs_final)
-# cont.matrix_full = makeContrasts(onevsnormal = (Stage_1a + Stage_1b)/2 - normal, 
-#                                  twovsnormal = (Stage_2a + Stage_2b)/2 - normal,
-#                                  threevsnormal = Stage_3 - normal, 
-#                                  fourvsnormal = Stage_4 - normal, 
-#                                  earlyvslate = (Stage_1a + Stage_1b + Stage_2a + Stage_2b)/4 - (Stage_3 + Stage_4)/2,
-#                                  onevsfour = (Stage_1a + Stage_1b)/2 - Stage_4, 
-#                                  onevstwo = (Stage_1a + Stage_1b)/2 - (Stage_2a + Stage_2b)/2, levels = design_full)
-# 
-# 
-# 
-# # --------------------------------------------- #
-# # --------------------------------------------- #
-# # --------------------------------------------- #
-# # --------------------------------------------- #
-# # --------------------------------------------- #
-# # --------------------------------------------- #
-# 
-# 
-# # Write out the union_z_exprs_final as an RDS file
-# saveRDS(union_z_exprs_final, "tumor_expression.rds")
-# 
-# # Model fitting with limma
-# union_z_fit = lmFit(union_z_exprs_final, design_full)
-# union_z_fit2 = contrasts.fit(union_z_fit, cont.matrix_full)
-# union_z_fit2 = eBayes(union_z_fit2, robust = TRUE)
-# union_z_results = decideTests(union_z_fit2)
-# results = as.data.frame(cbind(summary(union_z_results), rownames(summary(union_z_results))))
-# colnames(results)[8] = "direction"
-# results = results %>% dplyr::select(direction, everything())
-# 
-# DGEA_topTables = createWorkbook()
-# addWorksheet(DGEA_topTables, "summary")
-# writeData(DGEA_topTables, "summary", results)
-# 
-# DE_maps = list()
-# 
-# for (i in 1:ncol(union_z_fit2)){
-#   union_z_DE = as.data.frame(topTable(union_z_fit2, adjust.method="BH", 
-#                                       number = Inf, coef = colnames(union_z_fit2)[i]))
-#   union_z_DE$EntrezGene.ID = rownames(union_z_DE)
-#   
-#   # Annotation with official gene symbols
-#   union_z_DE_mapped = union_z_DE %>% left_join(ID_Map, by = "EntrezGene.ID")
-#   union_z_DE_mapped$Filter = NA
-#   unmapped = which(is.na(union_z_DE_mapped$HGNC_Official))
-#   union_z_DE_mapped$HGNC_Official[unmapped] = "unmapped"
-#   for(j in 1:nrow(union_z_DE_mapped)){
-#     if(union_z_DE_mapped$HGNC_Official[j] == "Yes"){
-#       union_z_DE_mapped$Filter[j] = "Keep"
-#     } else if(length(unique(union_z_DE_mapped$HGNC_Official[union_z_DE_mapped$EntrezGene.ID ==
-#                                                             union_z_DE_mapped$EntrezGene.ID[j]])) > 1 &&
-#               union_z_DE_mapped$HGNC_Official[j] == "No"){
-#       union_z_DE_mapped$Filter[j] = "Discard"
-#     } else if(unique(union_z_DE_mapped$HGNC_Official[union_z_DE_mapped$EntrezGene.ID ==
-#                                                      union_z_DE_mapped$EntrezGene.ID[j]]) == "No"){
-#       union_z_DE_mapped$Filter[j] = "Keep"
-#       union_z_DE_mapped$Gene.Symbol[j] = union_z_DE_mapped$EntrezGene.ID[j]
-#     } else if(union_z_DE_mapped$HGNC_Official[j] == "unmapped"){
-#       union_z_DE_mapped$Gene.Symbol[j] = union_z_DE_mapped$EntrezGene.ID[j]
-#       union_z_DE_mapped$Filter[j] = "Keep"
-#     }
-#   }
-#   
-#   union_z_DE_mapped = union_z_DE_mapped %>% 
-#     dplyr::filter(Filter == "Keep") %>%
-#     dplyr::select(EntrezGene.ID, Gene.Symbol, everything()) %>%
-#     dplyr::select(-Filter) %>%
-#     distinct()
-#   union_z_DE_mapped = union_z_DE_mapped[order(union_z_DE_mapped$adj.P.Val),]
-#   rownames(union_z_DE_mapped) = union_z_DE_mapped$EntrezGene.ID
-#   addWorksheet(DGEA_topTables, colnames(union_z_fit2)[i])
-#   writeData(DGEA_topTables, colnames(union_z_fit2)[i], union_z_DE_mapped)
-#   DE_maps[[i]] = union_z_DE_mapped
-# }
-# 
-# saveWorkbook(DGEA_topTables, "DGEA/Union/DGEA_results.xlsx", overwrite = TRUE)
-# names(DE_maps) = colnames(union_z_fit2)
-# 
-# ##### Condcordance and Discordance between stages #####
-# # Stage 1 vs. Normal / Stage 2 vs. Normal
-# # Save differences between Stage1/Normal and Stage2/Normal DEGs
-# # in a variable called "dichotomizers". However, the real dichotomizers are both
-# # genes not in common in the two lists as well as genes which are found to be
-# # stat. sig. diff. expressed towards opposite directions
-# 
-# common_genes_1_2 = intersect(DE_maps[["twovsnormal"]]$EntrezGene.ID[DE_maps[["twovsnormal"]]$adj.P.Val<0.05],
-#                              DE_maps[["onevsnormal"]]$EntrezGene.ID[DE_maps[["onevsnormal"]]$adj.P.Val<0.05])
-# 
-# gene_union = union(DE_maps[["twovsnormal"]]$EntrezGene.ID[DE_maps[["twovsnormal"]]$adj.P.Val<0.05],
-#                    DE_maps[["onevsnormal"]]$EntrezGene.ID[DE_maps[["onevsnormal"]]$adj.P.Val<0.05])
-# 
-# diffDEGs_1_2 = as.data.frame(gene_union[!gene_union %in% common_genes_1_2])
-# colnames(diffDEGs_1_2) = "EntrezGene.ID"
-# diffDEGs_1_2 = diffDEGs_1_2 %>% inner_join(DE_maps[["onevsnormal"]], by = "EntrezGene.ID") %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# 
-# # We need to establish which of the overlapping genes are differentially expressed
-# # towards the same direction (up-/down-regulated):
-# 
-# stage_1_subset = DE_maps[["onevsnormal"]][DE_maps[["onevsnormal"]]$EntrezGene.ID
-#                                           %in% common_genes_1_2, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_1 = logFC, adj_p_val_stage_1 = adj.P.Val)
-# stage_2_subset = DE_maps[["twovsnormal"]][DE_maps[["twovsnormal"]]$EntrezGene.ID
-#                                           %in% common_genes_1_2, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_2 = logFC, adj_p_val_stage_2 = adj.P.Val)
-# common_set_1_2 = inner_join(stage_1_subset, stage_2_subset, by = c("EntrezGene.ID", "Gene.Symbol"))
-# common_set_1_2$concordance = ifelse(common_set_1_2$logFC_stage_1*common_set_1_2$logFC_stage_2 > 0, 1, 0)
-# concordant_set_1_2 = common_set_1_2 %>%
-#   dplyr::filter(concordance == 1)
-# discordant_set_1_2 = common_set_1_2 %>%
-#   dplyr::filter(concordance == 0)
-# concordant_set_1_2 = concordant_set_1_2[order(concordant_set_1_2$adj_p_val_stage_1, 
-#                                               concordant_set_1_2$adj_p_val_stage_2), ]
-# discordant_set_1_2 = discordant_set_1_2[order(discordant_set_1_2$adj_p_val_stage_1, 
-#                                               discordant_set_1_2$adj_p_val_stage_2), ]
-# cwb = createWorkbook()
-# addWorksheet(cwb, "Concordance")
-# writeData(cwb, "Concordance", concordant_set_1_2)
-# addWorksheet(cwb, "Discordance")
-# writeData(cwb, "Discordance", discordant_set_1_2)
-# saveWorkbook(cwb, file = "DGEA/Stage_1_Stage_2_union_comparison.xlsx",
-#              overwrite = TRUE); rm(cwb)
-# 
-# # 9727 genes are stat. sig. diff. expressed towards the same direction between
-# # the two comparisons. We are interested in the remaining genes which were 
-# # stat. sig. diff. expressed towards different directions. 0 genes in the discordant set
-# 
-# discordants_1_2 = discordant_set_1_2 %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# dichotomizers_1_2 = rbind(discordants_1_2, diffDEGs_1_2)
-# dichotomizers_1_2 = dichotomizers_1_2 %>%
-#   left_join(DE_maps[["onevsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_1 = logFC, adj.P.Val_Stage_1 = adj.P.Val) %>%
-#   left_join(DE_maps[["twovsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC_Stage_1, adj.P.Val_Stage_1, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_2 = logFC, adj.P.Val_Stage_2 = adj.P.Val)
-# 
-# # 6821 genes
-# dichotomizers = createWorkbook()
-# addWorksheet(dichotomizers, "Stage_1_vs_2")
-# writeData(dichotomizers, "Stage_1_vs_2", dichotomizers_1_2)
-# 
-# # Additional concordance and dichotomizers #####
-# 
-# # Overall concordance between Stage 2 vs. Normal/3 vs. Normal, Stage 2 vs. Normal/4 vs. Normal,
-# # Stage 3 vs. Normal/4 vs. Normal
-# 
-# # Stage 2 vs. Normal/3 vs. Normal: 11437/12934
-# # length(intersect(DE_maps[["threevsnormal"]]$EntrezGene.ID[DE_maps[["threevsnormal"]]$adj.P.Val<0.05],
-# # DE_maps[["twovsnormal"]]$EntrezGene.ID[DE_maps[["twovsnormal"]]$adj.P.Val<0.05]))
-# 
-# # Stage 2 vs. Normal/4 vs. Normal: 10249/11512
-# # length(intersect(DE_maps[["fourvsnormal"]]$EntrezGene.ID[DE_maps[["fourvsnormal"]]$adj.P.Val<0.05],
-# # DE_maps[["twovsnormal"]]$EntrezGene.ID[DE_maps[["twovsnormal"]]$adj.P.Val<0.05]))
-# 
-# # Stage 3 vs. Normal/4 vs. Normal: 9537/11512
-# # length(intersect(DE_maps[["fourvsnormal"]]$EntrezGene.ID[DE_maps[["fourvsnormal"]]$adj.P.Val<0.05],
-# # DE_maps[["threevsnormal"]]$EntrezGene.ID[DE_maps[["threevsnormal"]]$adj.P.Val<0.05]))
-# 
-# # Stage 1 vs. Normal / Stage 3 vs. Normal
-# # Save differences between Stage1/Normal and Stage3/Normal DEGs
-# # in a variable called "dichotomizers". However, the real dichotomizers are both
-# # genes not in common in the two lists as well as genes which are found to be
-# # stat. sig. diff. expressed towards opposite directions
-# 
-# common_genes_1_3 = intersect(DE_maps[["threevsnormal"]]$EntrezGene.ID[DE_maps[["threevsnormal"]]$adj.P.Val<0.05],
-#                              DE_maps[["onevsnormal"]]$EntrezGene.ID[DE_maps[["onevsnormal"]]$adj.P.Val<0.05])
-# 
-# gene_union = union(DE_maps[["threevsnormal"]]$EntrezGene.ID[DE_maps[["threevsnormal"]]$adj.P.Val<0.05],
-#                    DE_maps[["onevsnormal"]]$EntrezGene.ID[DE_maps[["onevsnormal"]]$adj.P.Val<0.05])
-# 
-# diffDEGs_1_3 = as.data.frame(gene_union[!gene_union %in% common_genes_1_3])
-# colnames(diffDEGs_1_3) = "EntrezGene.ID"
-# diffDEGs_1_3 = diffDEGs_1_3 %>% inner_join(DE_maps[["onevsnormal"]], by = "EntrezGene.ID") %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# 
-# # We need to establish which of the overlapping genes are differentially expressed
-# # towards the same direction (up-/down-regulated):
-# 
-# stage_1_subset = DE_maps[["onevsnormal"]][DE_maps[["onevsnormal"]]$EntrezGene.ID
-#                                           %in% common_genes_1_3, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_1 = logFC, adj_p_val_stage_1 = adj.P.Val)
-# stage_3_subset = DE_maps[["threevsnormal"]][DE_maps[["threevsnormal"]]$EntrezGene.ID
-#                                             %in% common_genes_1_3, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_3 = logFC, adj_p_val_stage_3 = adj.P.Val)
-# common_set_1_3 = inner_join(stage_1_subset, stage_3_subset, by = c("EntrezGene.ID", "Gene.Symbol"))
-# common_set_1_3$concordance = ifelse(common_set_1_3$logFC_stage_1*common_set_1_3$logFC_stage_3 > 0, 1, 0)
-# concordant_set_1_3 = common_set_1_3 %>%
-#   dplyr::filter(concordance == 1)
-# discordant_set_1_3 = common_set_1_3 %>%
-#   dplyr::filter(concordance == 0)
-# concordant_set_1_3 = concordant_set_1_3[order(concordant_set_1_3$adj_p_val_stage_1, 
-#                                               concordant_set_1_3$adj_p_val_stage_3), ]
-# discordant_set_1_3 = discordant_set_1_3[order(discordant_set_1_3$adj_p_val_stage_1, 
-#                                               discordant_set_1_3$adj_p_val_stage_3), ]
-# cwb = createWorkbook()
-# addWorksheet(cwb, "Concordance")
-# writeData(cwb, "Concordance", concordant_set_1_3)
-# addWorksheet(cwb, "Discordance")
-# writeData(cwb, "Discordance", discordant_set_1_3)
-# saveWorkbook(cwb, file = "DGEA/Stage_1_Stage_3_union_comparison.xlsx",
-#              overwrite = TRUE); rm(cwb)
-# 
-# # 7607 genes are stat. sig. diff. expressed towards the same direction between
-# # the two comparisons. We are interested in the remaining genes which were 
-# # stat. sig. diff. expressed towards different directions. 0 discordant genes
-# 
-# discordants_1_3 = discordant_set_1_3 %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# dichotomizers_1_3 = rbind(discordants_1_3, diffDEGs_1_3)
-# dichotomizers_1_3 = dichotomizers_1_3 %>%
-#   left_join(DE_maps[["onevsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_1 = logFC, adj.P.Val_Stage_1 = adj.P.Val) %>%
-#   left_join(DE_maps[["threevsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC_Stage_1, adj.P.Val_Stage_1, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_3 = logFC, adj.P.Val_Stage_3 = adj.P.Val)
-# 
-# # 5185 genes
-# addWorksheet(dichotomizers, "Stage_1_vs_3")
-# writeData(dichotomizers, "Stage_1_vs_3", dichotomizers_1_3)
-# 
-# # Stage 1 vs. Normal / Stage 4 vs. Normal
-# # Save differences between Stage1/Normal and Stage4/Normal DEGs
-# # in a variable called "dichotomizers". However, the real dichotomizers are both
-# # genes not in common in the two lists as well as genes which are found to be
-# # stat. sig. diff. expressed towards opposite directions
-# 
-# common_genes_1_4 = intersect(DE_maps[["fourvsnormal"]]$EntrezGene.ID[DE_maps[["fourvsnormal"]]$adj.P.Val<0.05],
-#                              DE_maps[["onevsnormal"]]$EntrezGene.ID[DE_maps[["onevsnormal"]]$adj.P.Val<0.05])
-# 
-# gene_union = union(DE_maps[["fourvsnormal"]]$EntrezGene.ID[DE_maps[["fourvsnormal"]]$adj.P.Val<0.05],
-#                    DE_maps[["onevsnormal"]]$EntrezGene.ID[DE_maps[["onevsnormal"]]$adj.P.Val<0.05])
-# 
-# diffDEGs_1_4 = as.data.frame(gene_union[!gene_union %in% common_genes_1_4])
-# colnames(diffDEGs_1_4) = "EntrezGene.ID"
-# diffDEGs_1_4 = diffDEGs_1_4 %>% inner_join(DE_maps[["onevsnormal"]], by = "EntrezGene.ID") %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# 
-# # We need to establish which of the overlapping genes are differentially expressed
-# # towards the same direction (up-/down-regulated):
-# 
-# stage_1_subset = DE_maps[["onevsnormal"]][DE_maps[["onevsnormal"]]$EntrezGene.ID
-#                                           %in% common_genes_1_4, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_1 = logFC, adj_p_val_stage_1 = adj.P.Val)
-# stage_4_subset = DE_maps[["fourvsnormal"]][DE_maps[["fourvsnormal"]]$EntrezGene.ID
-#                                            %in% common_genes_1_4, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_4 = logFC, adj_p_val_stage_4 = adj.P.Val)
-# common_set_1_4 = inner_join(stage_1_subset, stage_4_subset, by = c("EntrezGene.ID", "Gene.Symbol"))
-# common_set_1_4$concordance = ifelse(common_set_1_4$logFC_stage_1*common_set_1_4$logFC_stage_4 > 0, 1, 0)
-# concordant_set_1_4 = common_set_1_4 %>%
-#   dplyr::filter(concordance == 1)
-# discordant_set_1_4 = common_set_1_4 %>%
-#   dplyr::filter(concordance == 0)
-# concordant_set_1_4 = concordant_set_1_4[order(concordant_set_1_4$adj_p_val_stage_1, 
-#                                               concordant_set_1_4$adj_p_val_stage_4), ]
-# discordant_set_1_4 = discordant_set_1_4[order(discordant_set_1_4$adj_p_val_stage_1, 
-#                                               discordant_set_1_4$adj_p_val_stage_4), ]
-# cwb = createWorkbook()
-# addWorksheet(cwb, "Concordance")
-# writeData(cwb, "Concordance", concordant_set_1_4)
-# addWorksheet(cwb, "Discordance")
-# writeData(cwb, "Discordance", discordant_set_1_4)
-# saveWorkbook(cwb, file = "DGEA/Stage_1_Stage_4_union_comparison.xlsx",
-#              overwrite = TRUE); rm(cwb)
-# 
-# # 6591 genes are stat. sig. diff. expressed towards the same direction between
-# # the two comparisons. We are interested in the remaining genes which were 
-# # stat. sig. diff. expressed towards different directions. 0 genes are discordant
-# 
-# discordants_1_4 = discordant_set_1_4 %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# dichotomizers_1_4 = rbind(discordants_1_4, diffDEGs_1_4)
-# dichotomizers_1_4 = dichotomizers_1_4 %>%
-#   left_join(DE_maps[["onevsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_1 = logFC, adj.P.Val_Stage_1 = adj.P.Val) %>%
-#   left_join(DE_maps[["fourvsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC_Stage_1, adj.P.Val_Stage_1, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_4 = logFC, adj.P.Val_Stage_4 = adj.P.Val)
-# 
-# # 5105 genes
-# addWorksheet(dichotomizers, "Stage_1_vs_4")
-# writeData(dichotomizers, "Stage_1_vs_4", dichotomizers_1_4)
-# 
-# # Stage 2 vs. Normal / Stage 4 vs. Normal
-# # Save differences between Stage2/Normal and Stage4/Normal DEGs
-# # in a variable called "dichotomizers". However, the real dichotomizers are both
-# # genes not in common in the two lists as well as genes which are found to be
-# # stat. sig. diff. expressed towards opposite directions
-# 
-# common_genes_2_4 = intersect(DE_maps[["twovsnormal"]]$EntrezGene.ID[DE_maps[["twovsnormal"]]$adj.P.Val<0.05],
-#                              DE_maps[["fourvsnormal"]]$EntrezGene.ID[DE_maps[["fourvsnormal"]]$adj.P.Val<0.05])
-# 
-# gene_union = union(DE_maps[["twovsnormal"]]$EntrezGene.ID[DE_maps[["twovsnormal"]]$adj.P.Val<0.05],
-#                    DE_maps[["fourvsnormal"]]$EntrezGene.ID[DE_maps[["fourvsnormal"]]$adj.P.Val<0.05])
-# 
-# diffDEGs_2_4 = as.data.frame(gene_union[!gene_union %in% common_genes_2_4])
-# colnames(diffDEGs_2_4) = "EntrezGene.ID"
-# diffDEGs_2_4 = diffDEGs_2_4 %>% inner_join(DE_maps[["fourvsnormal"]], by = "EntrezGene.ID") %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# 
-# # We need to establish which of the overlapping genes are differentially expressed
-# # towards the same direction (up-/down-regulated):
-# 
-# stage_2_subset = DE_maps[["twovsnormal"]][DE_maps[["twovsnormal"]]$EntrezGene.ID
-#                                           %in% common_genes_2_4, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_2 = logFC, adj_p_val_stage_2 = adj.P.Val)
-# stage_4_subset = DE_maps[["fourvsnormal"]][DE_maps[["fourvsnormal"]]$EntrezGene.ID
-#                                            %in% common_genes_2_4, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_4 = logFC, adj_p_val_stage_4 = adj.P.Val)
-# common_set_2_4 = inner_join(stage_2_subset, stage_4_subset, by = c("EntrezGene.ID", "Gene.Symbol"))
-# common_set_2_4$concordance = ifelse(common_set_2_4$logFC_stage_2*common_set_2_4$logFC_stage_4 > 0, 1, 0)
-# concordant_set_2_4 = common_set_2_4 %>%
-#   dplyr::filter(concordance == 1)
-# discordant_set_2_4 = common_set_2_4 %>%
-#   dplyr::filter(concordance == 0)
-# concordant_set_2_4 = concordant_set_2_4[order(concordant_set_2_4$adj_p_val_stage_2, 
-#                                               concordant_set_2_4$adj_p_val_stage_4), ]
-# discordant_set_2_4 = discordant_set_2_4[order(discordant_set_2_4$adj_p_val_stage_2, 
-#                                               discordant_set_2_4$adj_p_val_stage_4), ]
-# cwb = createWorkbook()
-# addWorksheet(cwb, "Concordance")
-# writeData(cwb, "Concordance", concordant_set_2_4)
-# addWorksheet(cwb, "Discordance")
-# writeData(cwb, "Discordance", discordant_set_2_4)
-# saveWorkbook(cwb, file = "DGEA/Stage_2_Stage_4_union_comparison.xlsx",
-#              overwrite = TRUE); rm(cwb)
-# 
-# # 8111 genes are stat. sig. diff. expressed towards the same direction between
-# # the two comparisons. We are interested in the remaining genes which were 
-# # stat. sig. diff. expressed towards different directions. 0 genes are discordant
-# 
-# discordants_2_4 = discordant_set_2_4 %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# dichotomizers_2_4 = rbind(discordants_2_4, diffDEGs_2_4)
-# dichotomizers_2_4 = dichotomizers_2_4 %>%
-#   left_join(DE_maps[["twovsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_2 = logFC, adj.P.Val_Stage_2 = adj.P.Val) %>%
-#   left_join(DE_maps[["fourvsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC_Stage_2, adj.P.Val_Stage_2, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_4 = logFC, adj.P.Val_Stage_4 = adj.P.Val)
-# 
-# # 8446 genes
-# addWorksheet(dichotomizers, "Stage_2_vs_4")
-# writeData(dichotomizers, "Stage_2_vs_4", dichotomizers_2_4)
-# 
-# # Stage 2 vs. Normal / Stage 3 vs. Normal
-# # Save differences between Stage2/Normal and Stage3/Normal DEGs
-# # in a variable called "dichotomizers". However, the real dichotomizers are both
-# # genes not in common in the two lists as well as genes which are found to be
-# # stat. sig. diff. expressed towards opposite directions
-# 
-# common_genes_2_3 = intersect(DE_maps[["twovsnormal"]]$EntrezGene.ID[DE_maps[["twovsnormal"]]$adj.P.Val<0.05],
-#                              DE_maps[["threevsnormal"]]$EntrezGene.ID[DE_maps[["threevsnormal"]]$adj.P.Val<0.05])
-# 
-# gene_union = union(DE_maps[["twovsnormal"]]$EntrezGene.ID[DE_maps[["twovsnormal"]]$adj.P.Val<0.05],
-#                    DE_maps[["threevsnormal"]]$EntrezGene.ID[DE_maps[["threevsnormal"]]$adj.P.Val<0.05])
-# 
-# diffDEGs_2_3 = as.data.frame(gene_union[!gene_union %in% common_genes_2_3])
-# colnames(diffDEGs_2_3) = "EntrezGene.ID"
-# diffDEGs_2_3 = diffDEGs_2_3 %>% inner_join(DE_maps[["threevsnormal"]], by = "EntrezGene.ID") %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# 
-# # We need to establish which of the overlapping genes are differentially expressed
-# # towards the same direction (up-/down-regulated):
-# 
-# stage_2_subset = DE_maps[["twovsnormal"]][DE_maps[["twovsnormal"]]$EntrezGene.ID
-#                                           %in% common_genes_2_3, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_2 = logFC, adj_p_val_stage_2 = adj.P.Val)
-# stage_3_subset = DE_maps[["threevsnormal"]][DE_maps[["threevsnormal"]]$EntrezGene.ID
-#                                             %in% common_genes_2_3, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_3 = logFC, adj_p_val_stage_3 = adj.P.Val)
-# common_set_2_3 = inner_join(stage_2_subset, stage_3_subset, by = c("EntrezGene.ID", "Gene.Symbol"))
-# common_set_2_3$concordance = ifelse(common_set_2_3$logFC_stage_2*common_set_2_3$logFC_stage_3 > 0, 1, 0)
-# concordant_set_2_3 = common_set_2_3 %>%
-#   dplyr::filter(concordance == 1)
-# discordant_set_2_3 = common_set_2_3 %>%
-#   dplyr::filter(concordance == 0)
-# concordant_set_2_3 = concordant_set_2_3[order(concordant_set_2_3$adj_p_val_stage_2, 
-#                                               concordant_set_2_3$adj_p_val_stage_3), ]
-# discordant_set_2_3 = discordant_set_2_3[order(discordant_set_2_3$adj_p_val_stage_2, 
-#                                               discordant_set_2_3$adj_p_val_stage_3), ]
-# cwb = createWorkbook()
-# addWorksheet(cwb, "Concordance")
-# writeData(cwb, "Concordance", concordant_set_2_3)
-# addWorksheet(cwb, "Discordance")
-# writeData(cwb, "Discordance", discordant_set_2_3)
-# saveWorkbook(cwb, file = "DGEA/Stage_2_Stage_3_union_comparison.xlsx",
-#              overwrite = TRUE); rm(cwb)
-# 
-# # 10112 genes are stat. sig. diff. expressed towards the same direction between
-# # the two comparisons. We are interested in the remaining genes which were 
-# # stat. sig. diff. expressed towards different directions. 0 genes are discordant
-# # DNAH17
-# 
-# discordants_2_3 = discordant_set_2_3 %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# dichotomizers_2_3 = rbind(discordants_2_3, diffDEGs_2_3)
-# dichotomizers_2_3 = dichotomizers_2_3 %>%
-#   left_join(DE_maps[["twovsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_2 = logFC, adj.P.Val_Stage_2 = adj.P.Val) %>%
-#   left_join(DE_maps[["threevsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC_Stage_2, adj.P.Val_Stage_2, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_3 = logFC, adj.P.Val_Stage_3 = adj.P.Val)
-# 
-# # 6556 genes
-# addWorksheet(dichotomizers, "Stage_2_vs_3")
-# writeData(dichotomizers, "Stage_2_vs_3", dichotomizers_2_3)
-# 
-# # Stage 3 vs. Normal / Stage 4 vs. Normal
-# # Save differences between Stage3/Normal and Stage4/Normal DEGs
-# # in a variable called "dichotomizers". However, the real dichotomizers are both
-# # genes not in common in the two lists as well as genes which are found to be
-# # stat. sig. diff. expressed towards opposite directions
-# 
-# common_genes_3_4 = intersect(DE_maps[["threevsnormal"]]$EntrezGene.ID[DE_maps[["threevsnormal"]]$adj.P.Val<0.05],
-#                              DE_maps[["fourvsnormal"]]$EntrezGene.ID[DE_maps[["fourvsnormal"]]$adj.P.Val<0.05])
-# 
-# gene_union = union(DE_maps[["threevsnormal"]]$EntrezGene.ID[DE_maps[["threevsnormal"]]$adj.P.Val<0.05],
-#                    DE_maps[["fourvsnormal"]]$EntrezGene.ID[DE_maps[["fourvsnormal"]]$adj.P.Val<0.05])
-# 
-# diffDEGs_3_4 = as.data.frame(gene_union[!gene_union %in% common_genes_3_4])
-# colnames(diffDEGs_3_4) = "EntrezGene.ID"
-# diffDEGs_3_4 = diffDEGs_3_4 %>% inner_join(DE_maps[["fourvsnormal"]], by = "EntrezGene.ID") %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# 
-# # We need to establish which of the overlapping genes are differentially expressed
-# # towards the same direction (up-/down-regulated):
-# 
-# stage_3_subset = DE_maps[["threevsnormal"]][DE_maps[["threevsnormal"]]$EntrezGene.ID
-#                                             %in% common_genes_3_4, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_3 = logFC, adj_p_val_stage_3 = adj.P.Val)
-# stage_4_subset = DE_maps[["fourvsnormal"]][DE_maps[["fourvsnormal"]]$EntrezGene.ID
-#                                            %in% common_genes_3_4, ] %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_stage_4 = logFC, adj_p_val_stage_4 = adj.P.Val)
-# common_set_3_4 = inner_join(stage_3_subset, stage_4_subset, by = c("EntrezGene.ID", "Gene.Symbol"))
-# common_set_3_4$concordance = ifelse(common_set_3_4$logFC_stage_3*common_set_3_4$logFC_stage_4 > 0, 1, 0)
-# concordant_set_3_4 = common_set_3_4 %>%
-#   dplyr::filter(concordance == 1)
-# discordant_set_3_4 = common_set_3_4 %>%
-#   dplyr::filter(concordance == 0)
-# concordant_set_3_4 = concordant_set_3_4[order(concordant_set_3_4$adj_p_val_stage_3, 
-#                                               concordant_set_3_4$adj_p_val_stage_4), ]
-# discordant_set_3_4 = discordant_set_3_4[order(discordant_set_3_4$adj_p_val_stage_3, 
-#                                               discordant_set_3_4$adj_p_val_stage_4), ]
-# cwb = createWorkbook()
-# addWorksheet(cwb, "Concordance")
-# writeData(cwb, "Concordance", concordant_set_3_4)
-# addWorksheet(cwb, "Discordance")
-# writeData(cwb, "Discordance", discordant_set_3_4)
-# saveWorkbook(cwb, file = "DGEA/Stage_3_Stage_4_union_comparison.xlsx",
-#              overwrite = TRUE); rm(cwb)
-# 
-# # 6872 genes are stat. sig. diff. expressed towards the same direction between
-# # the two comparisons. We are interested in the remaining genes which were 
-# # stat. sig. diff. expressed towards different directions. 0 genes are left!
-# 
-# discordants_3_4 = discordant_set_3_4 %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol)
-# dichotomizers_3_4 = rbind(discordants_3_4, diffDEGs_3_4)
-# dichotomizers_3_4 = dichotomizers_3_4 %>%
-#   left_join(DE_maps[["threevsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_3 = logFC, adj.P.Val_Stage_3 = adj.P.Val) %>%
-#   left_join(DE_maps[["fourvsnormal"]], by = c("EntrezGene.ID", "Gene.Symbol")) %>%
-#   dplyr::select(EntrezGene.ID, Gene.Symbol, logFC_Stage_3, adj.P.Val_Stage_3, logFC, adj.P.Val) %>%
-#   dplyr::rename(logFC_Stage_4 = logFC, adj.P.Val_Stage_4 = adj.P.Val)
-# 
-# # 5048 genes
-# addWorksheet(dichotomizers, "Stage_3_vs_4")
-# writeData(dichotomizers, "Stage_3_vs_4", dichotomizers_3_4)
-# saveWorkbook(dichotomizers, "DGEA/Union/Dichotomizers.xlsx", overwrite = TRUE)
-# 
-# # Union volcanoes #####
-# union_stages_volcano = EnhancedVolcano(DE_maps[["earlyvslate"]],
-#                                        lab = DE_maps[["earlyvslate"]][, "Gene.Symbol"],
-#                                        x = 'logFC',
-#                                        y = 'adj.P.Val',
-#                                        title = "Stage 1/2 vs. Stage 3/4",
-#                                        pCutoff = 0.05,
-#                                        FCcutoff = 1,
-#                                        col=c('grey', 'pink', 'purple4', 'red4'),
-#                                        colAlpha = 0.7,
-#                                        xlim = c(-5, 5),
-#                                        ylab = bquote(~-Log[10] ~ (italic(adj.p.value))),
-#                                        xlab = "\nDifferential expression (units: sd)",
-#                                        legendLabels = c("NS", "|DE| > 1 s.d.", "FDR < 0.05", "FDR < 0.05 & |DE| > 1 s.d."))
-# tiff("DGEA/Union/Union_Stages_Volcano.tif", width = 1500, height = 1920, res = 100)
-# union_stages_volcano
-# dev.off()
-# 
-# union_one_four_stages_volcano = EnhancedVolcano(DE_maps[["onevsfour"]],
-#                                                 lab = DE_maps[["onevsfour"]][, "Gene.Symbol"],
-#                                                 x = 'logFC',
-#                                                 y = 'adj.P.Val',
-#                                                 title = "Stage 1 vs. Stage 4",
-#                                                 pCutoff = 0.05,
-#                                                 FCcutoff = 1,
-#                                                 col=c('grey', 'pink', 'purple4', 'red4'),
-#                                                 colAlpha = 0.7,
-#                                                 xlim = c(-5, 5),
-#                                                 ylab = bquote(~-Log[10] ~ (italic(adj.p.value))),
-#                                                 xlab = "\nDifferential expression (units: sd)",
-#                                                 legendLabels = c("NS", "|DE| > 1 s.d.", "FDR < 0.05", "FDR < 0.05 & |DE| > 1 s.d."))
-# tiff("DGEA/Union/Union_One_Four_Stages_Volcano.tif", width = 1500, height = 1920, res = 100)
-# union_one_four_stages_volcano
-# dev.off()
-# 
-# union_one_normal_volcano = EnhancedVolcano(DE_maps[["onevsnormal"]],
-#                                            lab = DE_maps[["onevsnormal"]][, "Gene.Symbol"],
-#                                            x = 'logFC',
-#                                            y = 'adj.P.Val',
-#                                            title = "Stage 1 vs. Normal",
-#                                            pCutoff = 0.05,
-#                                            FCcutoff = 1,
-#                                            col=c('grey', 'pink', 'purple4', 'red4'),
-#                                            colAlpha = 0.7,
-#                                            xlim = c(-5, 5),
-#                                            ylim = c(0, 10),
-#                                            ylab = bquote(~-Log[10] ~ (italic(adj.p.value))),
-#                                            xlab = "\nDifferential expression (units: sd)",
-#                                            legendLabels = c("NS", "|DE| > 1 s.d.", "FDR < 0.05", "FDR < 0.05 & |DE| > 1 s.d."))
-# tiff("DGEA/Union/Union_One_Normal_Volcano.tif", width = 1500, height = 1920, res = 100)
-# union_one_normal_volcano
-# dev.off()
-# 
-# union_two_normal_volcano = EnhancedVolcano(DE_maps[["twovsnormal"]],
-#                                            lab = DE_maps[["twovsnormal"]][, "Gene.Symbol"],
-#                                            x = 'logFC',
-#                                            y = 'adj.P.Val',
-#                                            title = "Stage 2 vs. Normal",
-#                                            pCutoff = 0.05,
-#                                            FCcutoff = 1,
-#                                            col=c('grey', 'pink', 'purple4', 'red4'),
-#                                            colAlpha = 0.7,
-#                                            xlim = c(-5, 5),
-#                                            ylim = c(0, 35),
-#                                            ylab = bquote(~-Log[10] ~ (italic(adj.p.value))),
-#                                            xlab = "\nDifferential expression (units: sd)",
-#                                            legendLabels = c("NS", "|DE| > 1 s.d.", "FDR < 0.05", "FDR < 0.05 & |DE| > 1 s.d."))
-# tiff("DGEA/Union/Union_Two_Normal_Volcano.tif", width = 1500, height = 1920, res = 100)
-# union_two_normal_volcano
-# dev.off()
-# 
-# union_three_normal_volcano = EnhancedVolcano(DE_maps[["threevsnormal"]],
-#                                              lab = DE_maps[["threevsnormal"]][, "Gene.Symbol"],
-#                                              x = 'logFC',
-#                                              y = 'adj.P.Val',
-#                                              title = "Stage 3 vs. Normal",
-#                                              pCutoff = 0.05,
-#                                              FCcutoff = 1,
-#                                              col=c('grey', 'pink', 'purple4', 'red4'),
-#                                              colAlpha = 0.7,
-#                                              xlim = c(-5, 5),
-#                                              ylim = c(0, 12.5),
-#                                              ylab = bquote(~-Log[10] ~ (italic(adj.p.value))),
-#                                              xlab = "\nDifferential expression (units: sd)",
-#                                              legendLabels = c("NS", "|DE| > 1 s.d.", "FDR < 0.05", "FDR < 0.05 & |DE| > 1 s.d."))
-# tiff("DGEA/Union/Union_Three_Normal_Volcano.tif", width = 1500, height = 1920, res = 100)
-# union_three_normal_volcano
-# dev.off()
-# 
-# union_four_normal_volcano = EnhancedVolcano(DE_maps[["fourvsnormal"]],
-#                                             lab = DE_maps[["fourvsnormal"]][, "Gene.Symbol"],
-#                                             x = 'logFC',
-#                                             y = 'adj.P.Val',
-#                                             title = "Stage 4 vs. Normal",
-#                                             pCutoff = 0.05,
-#                                             FCcutoff = 1,
-#                                             col=c('grey', 'pink', 'purple4', 'red4'),
-#                                             colAlpha = 0.7,
-#                                             xlim = c(-5, 5),
-#                                             ylim = c(0, 15),
-#                                             ylab = bquote(~-Log[10] ~ (italic(adj.p.value))),
-#                                             xlab = "\nDifferential expression (units: sd)",
-#                                             legendLabels = c("NS", "|DE| > 1 s.d.", "FDR < 0.05", "FDR < 0.05 & |DE| > 1 s.d."))
-# tiff("DGEA/Union/Union_Four_Normal_Volcano.tif", width = 1500, height = 1920, res = 100)
-# union_four_normal_volcano
-# dev.off()
-# 
-# rm(gene_union, i, j)
-# 
-# tiff("DGEA/Union//Volcano_multiplot.tif", 
-#      width = 3000, height = 3840, res = 150)
-# multiplot(union_one_normal_volcano, union_two_normal_volcano,
-#           union_three_normal_volcano, union_four_normal_volcano, cols = 2)
-# m = ggplot(multiplot(union_one_normal_volcano, union_two_normal_volcano,
-#                      union_three_normal_volcano, union_four_normal_volcano, cols = 2))
-# dev.off(); rm(m)
-# 
-# # Useful to save the volcano plots only as an .RData file that will be later used
-# # to create additional plots after pathway analysis:
-# 
-# # rm(list=setdiff(ls(), c("union_four_normal_volcano", "union_three_normal_volcano",
-# # "union_two_normal_volcano", "union_one_normal_volcano")))
-# 
-# # Augment that later with the blood samples volcano
+

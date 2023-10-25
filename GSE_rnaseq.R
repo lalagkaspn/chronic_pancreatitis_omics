@@ -677,7 +677,8 @@ colnames(design) = c("chronic_pancreatitis", "non_tumor", "tumor",
 rownames(design) = colnames(z_exprs_nonas)
 cont.matrix = makeContrasts(CPvsNormal = chronic_pancreatitis - non_tumor,
                             CPvsTumor = chronic_pancreatitis - tumor,
-                            TumorvsNormal = tumor - non_tumor)
+                            TumorvsNormal = tumor - non_tumor, 
+                            levels = design)
 
 # Limma
 z_fit = lmFit(z_exprs_nonas, design)
@@ -736,48 +737,6 @@ for (i in 1:ncol(z_fit2)){
 saveWorkbook(DGEA_topTables, "DGEA/GSE_RNAseq/DGEA_results.xlsx", overwrite = TRUE)
 names(DE_maps) = colnames(z_fit2)
 
-### ARIS MODIFICATION ON ARIS' CODE ### (lines 701-743)
-### CHECK FOR SPEED AND OUTPUT ###
-library(purrr)
-
-process_column <- function(col_name) {
-  z_DE <- as.data.frame(topTable(z_fit2, adjust.method="BH", number = Inf, coef = col_name))
-  z_DE$EntrezGene.ID <- rownames(z_DE)
-  
-  # Annotation with official gene symbols
-  z_DE_mapped <- z_DE %>%
-    left_join(ID_Map, by = "EntrezGene.ID") %>%
-    mutate(
-      Filter = case_when(
-        is.na(HGNC_Official) ~ "Keep",
-        HGNC_Official == "Yes" ~ "Keep",
-        HGNC_Official == "No" & 
-          length(unique(HGNC_Official[EntrezGene.ID == first(EntrezGene.ID)])) > 1 ~ "Discard",
-        TRUE ~ "Keep"
-      ),
-      Gene.Symbol = case_when(
-        Filter == "Keep" & is.na(Gene.Symbol) ~ as.character(EntrezGene.ID),
-        TRUE ~ Gene.Symbol
-      )
-    ) %>%
-    filter(Filter == "Keep") %>%
-    select(EntrezGene.ID, Gene.Symbol, everything(), -Filter) %>%
-    distinct() %>%
-    arrange(adj.P.Val)
-  
-  rownames(z_DE_mapped) <- z_DE_mapped$EntrezGene.ID
-  addWorksheet(DGEA_topTables, col_name)
-  writeData(DGEA_topTables, col_name, z_DE_mapped)
-  
-  return(z_DE_mapped)
-}
-
-DE_maps <- purrr::map(colnames(z_fit2), process_column)
-
-saveWorkbook(DGEA_topTables, "DGEA/GSE_RNAseq/DGEA_results.xlsx", overwrite = TRUE)
-names(DE_maps) = colnames(z_fit2)
-###
-
 ##### Volcano plots #####
 # create custom key-value pairs for stat. sig genes (p.adj < 0.05) and n.s genes
 keyvals.colours = list()
@@ -809,7 +768,7 @@ volcano_CPvsNormal = EnhancedVolcano(DE_maps[["CPvsNormal"]],
                                      cutoffLineWidth = 0.3,
                                      cutoffLineCol = "black",
                                      FCcutoff = 1,
-                                     colCustom = keyvals.colour,
+                                     colCustom = keyvals.colours[["CPvsNormal"]],
                                      colAlpha = 0.7,
                                      xlim = c(-5, 5),
                                      ylab = bquote(bold(-log[10]("BH adj. p-value"))),
