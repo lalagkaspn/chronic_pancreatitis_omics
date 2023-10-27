@@ -15,11 +15,15 @@ library(pheatmap)
 # if Windows OS
 if (Sys.info()['sysname'] == "Windows") {
   type_compression = "windows"
-} 
+}
+# if Linux
+if (Sys.info()['sysname'] == "Linux") {
+  type_compression = "windows"
+}
 # if macOS
 if (Sys.info()['sysname'] == "Darwin") {
   type_compression = "cairo"
-} 
+}
 
 ##### Downloading data #####
 datasets = c("GSE194331", "GSE133684")

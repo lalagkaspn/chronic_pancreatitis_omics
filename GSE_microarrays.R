@@ -20,6 +20,10 @@ library(impute)
 if (Sys.info()['sysname'] == "Windows") {
   type_compression = "windows"
 } 
+# if Linux
+if (Sys.info()['sysname'] == "Linux") {
+  type_compression = "windows"
+}
 # if macOS
 if (Sys.info()['sysname'] == "Darwin") {
   type_compression = "cairo"
