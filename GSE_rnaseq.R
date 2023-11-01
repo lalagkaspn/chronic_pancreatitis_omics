@@ -289,7 +289,7 @@ esets[[2]] = esets[[2]][,c("ENTREZ_GENE_ID",
                            intersect(colnames(esets[[2]]),
                                      filt_pdata[[2]]$Patient_ID))]
 
-# log2(TPM + 1) transformation ###
+# log2(TPM + 1) transformation --> +1 is used to avoid -inf values for genes with TPM=0, as log2(0) = -Inf
 for (i in 1:length(esets)) {
   cols_to_transform = setdiff(colnames(esets[[i]]), "ENTREZ_GENE_ID")
   esets[[i]][cols_to_transform] = lapply(esets[[i]][cols_to_transform],
