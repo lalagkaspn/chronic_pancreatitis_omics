@@ -108,9 +108,27 @@ nr_dysregulated_genes_microarrays
 nr_dysregulated_genes_rnaseq = nrow(cp_vs_normal_rnaseq_common_genes_sig)
 nr_dysregulated_genes_rnaseq
 
-## overlap of significantly dysregualted genes
+## overlap of significantly dysregulated genes
 overlap_sig_dys_genes = intersect(cp_vs_normal_microarrays_common_genes_sig$EntrezGene.ID, cp_vs_normal_rnaseq_common_genes_sig$EntrezGene.ID)
 length(overlap_sig_dys_genes)
+
+## check the significance of the overlap
+# the background genes are the genes tested in both microarry and RNA-seq data (n=13,029)
+# create 2x2 table
+contingency_table = matrix(ncol = 2, nrow = 2)
+colnames(contingency_table) = c("in RNA-seq", "not in RNA-seq")
+rownames(contingency_table) = c("in microarray", "not in microarray")
+# populate the 2x2 table
+# genes found to be significantly dysregulated in both data
+contingency_table[1, 1] = length(overlap_sig_dys_genes) 
+# genes found to be significantly dysregulated in RNA-seq but not in microarray
+contingency_table[2, 1] = length(setdiff(cp_vs_normal_rnaseq_common_genes_sig$EntrezGene.ID, cp_vs_normal_microarrays_common_genes_sig$EntrezGene.ID)) 
+# genes found to be significantly dysregulated in microarray but not in RNA-seq
+contingency_table[1, 2] = length(setdiff(cp_vs_normal_microarrays_common_genes_sig$EntrezGene.ID, cp_vs_normal_rnaseq_common_genes_sig$EntrezGene.ID)) 
+# genes not found to be significantly dysregulated in any data
+contingency_table[2, 2] = length(overlapping_genes) - contingency_table[1, 1] - contingency_table[2, 1] - contingency_table[1, 2]
+# assess the significance of the overlap using the Fisher's exact test (hypergeometric test)
+fisher.test(contingency_table, alternative = "greater")
 
 ## barplot to summarize the overlap of dysregulated genes in both data
 # data
