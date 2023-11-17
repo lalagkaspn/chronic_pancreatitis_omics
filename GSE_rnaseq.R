@@ -160,7 +160,7 @@ summary(GSE194331_raw_counts[, 2:5]) # --> needs normalization --> will calculat
 library(AnnotationHub)
 
 # Create an AnnotationHub object
-ah = AnnotationHub()
+ah = AnnotationHub() # snapshotDate(): 2023-04-25
 
 # Query for the latest Homo sapiens EnsDb object
 latest_homo_sapiens = query(ah, c("EnsDb", "Homo sapiens")) 
@@ -344,6 +344,8 @@ z_exprs = as.matrix(z_exprs %>% dplyr::select(-EntrezGene.ID)) # 23,722 x 620
 z_exprs = z_exprs[rowSums(is.na(z_exprs)) != ncol(z_exprs), ]
 z_exprs_nonas = na.omit(z_exprs) # 20,550 x 620
 z_exprs_nonas = z_exprs_nonas[, full_pdata$GEO_accession] # 20,550 x 620
+# save
+saveRDS(z_exprs_nonas, "DGEA/z_exprs_nonas_RNAseq.RDS")
 
 # Multidimensional scaling plot: original matrix #####
 original_mds = plotMDS(original_exprs_nonas)

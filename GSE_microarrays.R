@@ -279,6 +279,9 @@ rownames(full_pdata) = full_pdata$GEO_accession
 rm(pdata143754, pdata61166, pdata71989, pdata101462, pdata77858)
 table(full_pdata$Tissue_type)
 
+## Save pdata
+openxlsx::write.xlsx(full_pdata, "DGEA/Pheno_microarrays.xlsx", overwrite = TRUE)
+
 ## ---------------------------
 ## Expression data
 ## ---------------------------
@@ -530,14 +533,8 @@ names(na_esets) = names(GEOsets)
 na_esets # No NA values exist in the expression files
 rm(na_esets)
 
-## Save intermediate files ##
-saveRDS(esets, "intermediate_files/GSE_microarrays/esets_raw.RDS")
-saveRDS(filt_pdata, "intermediate_files/GSE_microarrays/filt_pdata.RDS")
-saveRDS(pdata, "intermediate_files/GSE_microarrays/pdata_raw.RDS")
-openxlsx::write.xlsx(full_pdata, "DGEA/Pheno_microarrays.xlsx", overwrite = TRUE)
-
 ##### z-score-transformation #####
-# KBZ transformation method ( https:://www.biostars.org/p/283083/ )
+# KBZ transformation method (https:://www.biostars.org/p/283083/)
 z = list()
 for(i in 1:length(esets)){
   df = as.data.frame(esets[[i]]) %>%
@@ -595,6 +592,8 @@ z_exprs = as.matrix(z_exprs %>% dplyr::select(-EntrezGene.ID)) # 13,744 x 165
 z_exprs = z_exprs[rowSums(is.na(z_exprs)) != ncol(z_exprs), ]
 z_exprs_nonas = na.omit(z_exprs) # 13,744 x 165
 z_exprs_nonas = z_exprs_nonas[, full_pdata$GEO_accession] # 13,744 x 165
+# save
+saveRDS(z_exprs_nonas, "DGEA/z_exprs_nonas_microarrays.RDS")
 
 # Multidimensional scaling plot: original matrix #####
 original_mds = plotMDS(original_exprs_nonas)
