@@ -79,7 +79,7 @@ test_set = test_set %>% inner_join(pheno_microarray, by = "Sample.ID") %>%
 library(doParallel)
 
 system <- Sys.info()['sysname']
-cores <- 100 # detectCores()
+cores <- detectCores()
 
 if (system == 'Windows') {
   cl <- makeCluster(getOption('cl.cores', cores), type='PSOCK')

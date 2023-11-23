@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J CP_prediction_models
-#SBATCH -c 100
-#SBATCH --mem=1024GB
+#SBATCH -c 80
+#SBATCH --mem=832GB
 #SBATCH -p cpu-long
 #SBATCH -t 10:00:00
 #SBATCH --mail-type=ALL
