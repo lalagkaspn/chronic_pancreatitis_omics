@@ -3,6 +3,7 @@
 # prediction model is evaluated on the microarray data.
 
 # Preparation #####
+setwd("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/")
 ## set path to installed packages so the HPC can find them
 .libPaths("/home/panagiotisnikolaos_lalagkas_student_uml_edu/R/x86_64-pc-linux-gnu-library/4.2")
 #library(limma)
@@ -30,8 +31,6 @@ library(caret)
 #library(MASS)
 #library(LiblineaR)
 #library(genefu)
-
-setwd("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/")
 
 # Import data
 selected_markers_pre = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/genes_for_model_training.xlsx")
