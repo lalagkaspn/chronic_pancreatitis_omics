@@ -3,7 +3,9 @@
 # prediction model is evaluated on the microarray data.
 
 # Preparation #####
-# library(limma)
+## set path to installed packages so the HPC can find them
+.libPaths("/home/panagiotisnikolaos_lalagkas_student_uml_edu/R/x86_64-pc-linux-gnu-library/4.2")
+#library(limma)
 #library(org.Hs.eg.db)
 library(dplyr)
 library(stringr)
@@ -29,13 +31,15 @@ library(caret)
 #library(LiblineaR)
 #library(genefu)
 
+setwd("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/")
+
 # Import data
-selected_markers_pre = read.xlsx("genes_for_model_training.xlsx")
-train_set = read.xlsx("ML_output/train_set.xlsx")
-validation_set = read.xlsx("ML_output/validation_set.xlsx")
-lasso_markers = read.xlsx("ML_output/Lasso_coefficients.xlsx")
-exprs_microarray = readRDS("DGEA/z_exprs_nonas_microarrays.RDS")
-pheno_microarray = read.xlsx("DGEA/Pheno_microarrays.xlsx") %>% 
+selected_markers_pre = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/genes_for_model_training.xlsx")
+train_set = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/ML_output/train_set.xlsx")
+validation_set = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/ML_output/validation_set.xlsx")
+lasso_markers = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/ML_output/Lasso_coefficients.xlsx")
+exprs_microarray = readRDS("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/DGEA/z_exprs_nonas_microarrays.RDS")
+pheno_microarray = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/DGEA/Pheno_microarrays.xlsx") %>% 
   dplyr::rename(Sample.ID = GEO_accession)
 
 # Filter train and validation sets for the lasso markers
@@ -76,7 +80,7 @@ test_set = test_set %>% inner_join(pheno_microarray, by = "Sample.ID") %>%
 library(doParallel)
 
 system <- Sys.info()['sysname']
-cores <- 10 # detectCores()
+cores <- 100 # detectCores()
 
 if (system == 'Windows') {
   cl <- makeCluster(getOption('cl.cores', cores), type='PSOCK')
