@@ -1,14 +1,18 @@
+
 # This script is used for the fitting prediction models using 10x10 repeated
 # cross-validation and evaluation on the validation set. Then the final selected
 # prediction model is evaluated on the microarray data.
 
 # Preparation #####
-setwd("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/")
+# setwd("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/")
 ## set path to installed packages so the HPC can find them
-.libPaths("/home/panagiotisnikolaos_lalagkas_student_uml_edu/R/x86_64-pc-linux-gnu-library/4.2")
+# .libPaths(c("/home/panagiotisnikolaos_lalagkas_student_uml_edu/R/x86_64-pc-linux-gnu-library/4.2", 
+#             "/usr/local/lib/R/site-library",
+#             "/usr/local/lib/R/library",
+#             "/modules/apps/ood/rstudio-server/packages/4.2"))
+library(dplyr)
 #library(limma)
 #library(org.Hs.eg.db)
-library(dplyr)
 library(stringr)
 #library(tidyr)
 #library(EnhancedVolcano)
