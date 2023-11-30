@@ -1,7 +1,0 @@
-[1] "Packages successfully loaded!"
-[1] "Number of cores used: 64"
-          used  (Mb) gc trigger  (Mb) max used  (Mb)
-Ncells 2313389 123.6    5862137 313.1  4719808 252.1
-Vcells 9226512  70.4   29522631 225.3 29515263 225.2
-[1] "Fitting radial basis function SVM model!"
-[1] "Finished fitting radial basis function SVM model!"

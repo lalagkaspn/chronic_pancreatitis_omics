@@ -67,9 +67,9 @@ test_set = test_set %>% dplyr::inner_join(pheno_microarray, by = "Sample.ID") %>
 library(doParallel, lib.loc = "/home/panagiotisnikolaos_lalagkas_student_uml_edu/R/x86_64-pc-linux-gnu-library/4.2")
 
 system <- Sys.info()['sysname']
-print(paste0("Number of cores used: ", detectCores(), collapse = ""))
 gc()
-cores <- detectCores()
+cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK")) # detectCores() doesn't work with the way the Slurm limits the number of cores available.
+print(cores)
 
 if (system == 'Windows') {
   cl <- makeCluster(getOption('cl.cores', cores), type='PSOCK')
@@ -108,12 +108,12 @@ boost_control = trainControl(method = "repeatedcv", # cross-validation
 RNGversion("4.2.2")
 set.seed(123)
 library(xgboost, lib.loc = "/home/panagiotisnikolaos_lalagkas_student_uml_edu/R/x86_64-pc-linux-gnu-library/4.2")
-print("NOTE: Training the boosting model! (2/9)")
+print(paste0(Sys.time(), " - Started training the boosting model!"))
 boost = train(Tissue_type ~ .,
               data = train_set,
               trControl = boost_control,
               tuneGrid = boost_grid,
               method = "xgbTree",
               verbose = FALSE)
+print(paste0(Sys.time(), " - Finished training the boosting model!"))
 saveRDS(boost, "/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/xgboost.rds")
-print("NOTE: Finished training the boosting model! (2/9)")

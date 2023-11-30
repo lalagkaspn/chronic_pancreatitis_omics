@@ -97,11 +97,11 @@ rbf_svm_tune = expand.grid(C = cost_values,
 # Radial Basis Function
 RNGversion("4.2.2")
 set.seed(123)
-print("Fitting radial basis function SVM model!")
+print(paste0(Sys.time(), " - Started fitting the radial basis function SVM model!"))
 rbf_svm_model = train(Tissue_type ~., data = train_set, 
                       method = "svmRadial", 
                       preProcess = NULL,
                       trControl = rbf_svm_ctrl,
                       tuneGrid = rbf_svm_tune)
+print(paste0(Sys.time(), " - Finished fitting the radial basis function SVM model!"))
 saveRDS(rbf_svm_model, "/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/prediction_models/rbf_svm_model.rds")
-print("Finished fitting radial basis function SVM model!")

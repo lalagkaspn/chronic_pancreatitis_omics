@@ -107,9 +107,9 @@ boost_control = trainControl(method = "repeatedcv", # cross-validation
 # Random Forest
 RNGversion("4.2.2")
 set.seed(123)
-print("Training training RF-k model!")
+print(paste0(Sys.time(), " - Started training the RF-k model!"))
 rf = train(Tissue_type ~., data = train_set,
            method = "rf",
            metric = "Kappa", trControl = ctrl1, tuneGrid = grid2)
+print(paste0(Sys.time(), " - Finished training the RF-k model!"))
 saveRDS(rf, "/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/prediction_models/rf_k.rds")
-print("Finished training RF-k model!")

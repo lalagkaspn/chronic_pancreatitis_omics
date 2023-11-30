@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -J rbf_svm_model
 #SBATCH -c 64
-#SBATCH --mem=503GB
+#SBATCH --mem=124GB
 #SBATCH -p cpu-long
-#SBATCH -t 04:00:00
+#SBATCH -t 02:00:00
 #SBATCH -o /home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/logs/rbf_svm_model_%J.out
 #SBATCH -e /home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/logs/rbf_svm_model_%J.err
 

@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -J C5.0_ROC
 #SBATCH -c 64
-#SBATCH --mem=503GB
-#SBATCH -p cpu-long
-#SBATCH -t 02:00:00
+#SBATCH --mem=124GB
+#SBATCH -p cpu
+#SBATCH -t 01:00:00
 #SBATCH -o /home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/logs/C5.0_ROC_%J.out
 #SBATCH -e /home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/logs/C5.0_ROC_%J.err
 

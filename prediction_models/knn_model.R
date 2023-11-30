@@ -88,7 +88,7 @@ grid_knn = expand.grid(k = c(1, 2, 3, 4, 5, 10, 15, 20, 25, 30, 40, 50, 100))
 # k-NN
 RNGversion("4.2.2")
 set.seed(123)
-print("Fitting k-NN model!")
+print(paste0(Sys.time(), " - Started fitting the k-NN model!"))
 kNN_model = train(Tissue_type ~., 
                   data = train_set, 
                   method = "knn", 
@@ -96,5 +96,5 @@ kNN_model = train(Tissue_type ~.,
                   trControl = ctrl_knn,
                   tuneGrid = grid_knn,
                   metric = "Accuracy")
+print(paste0(Sys.time(), " - Finished fitting the k-NN model!"))
 saveRDS(kNN_model, "/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/prediction_models/knn_model.rds")
-print("Finished fitting k-NN model!")

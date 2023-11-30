@@ -97,11 +97,11 @@ rbf_svm_tune = expand.grid(C = cost_values,
 # Linear kernel - L2 regularised
 RNGversion("4.2.2")
 set.seed(123)
-print("Fitting L2-SVM mdoel!")
+print(paste0(Sys.time(), " - Started fitting the L2-SVM model!"))
 L2_linear_svm_model = train(Tissue_type ~., data = train_set, 
                             method = "svmLinear3", 
                             preProcess = NULL,
                             trControl = L2_linear_svm_ctrl,
                             tuneGrid = L2_linear_svm_tune)
+print(paste0(Sys.time(), " - Finished fitting the L2-SVM model!"))
 saveRDS(L2_linear_svm_model, "/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/prediction_models/L2_svm.rds")
-print("Finished fitting L2-SVM model!")

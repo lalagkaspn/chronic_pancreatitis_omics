@@ -66,7 +66,6 @@ test_set = test_set %>% dplyr::inner_join(pheno_microarray, by = "Sample.ID") %>
 
 # Enable parallel programming
 system <- Sys.info()['sysname']
-print(paste0("Number of cores used: ", detectCores(), collapse = ""))
 gc()
 cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK")) # detectCores() doesn't work with the way the Slurm limits the number of cores available.
 print(cores)
@@ -107,11 +106,11 @@ boost_control = trainControl(method = "repeatedcv", # cross-validation
 # C5.0 - k
 RNGversion("4.2.2")
 set.seed(123)
-print("Training the C5.0_k model!")
+print(paste0(Sys.time(), " - Started training the C5.0_k model!"))
 C50_model = train(Tissue_type ~., data = train_set,
                   method = "C5.0",
                   trControl = ctrl1,
                   metric = "Kappa",
                   tuneGrid = grid1)
+print(paste0(Sys.time(), " - Finished training the C5.0_k model!"))
 saveRDS(C50_model, "/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/prediction_models/C5.0_k.rds")
-print("Finished training the C5.0_k model!")

@@ -106,9 +106,9 @@ boost_control = trainControl(method = "repeatedcv", # cross-validation
 # RF with grid2 and ctrls, ROC
 RNGversion("4.2.2")
 set.seed(123)
-print("Training the RF-ROC model!")
+print(paste0(Sys.time(), " - Started fitting the RF-ROC model!"))
 comp_rf = train(Tissue_type ~., data = train_set,
                 method = "rf",
                 metric = "logLoss", trControl = ctrl2, tuneGrid = grid2)
+print(paste0(Sys.time(), " - Finished fitting the RF-ROC model!"))
 saveRDS(comp_rf, "/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/prediction_models/rf_roc.rds")
-print("Finished training the RF-ROC model!")

@@ -106,9 +106,9 @@ boost_control = trainControl(method = "repeatedcv", # cross-validation
 # C5.0 with grid_c50
 RNGversion("4.2.2")
 set.seed(123)
-print("Training the C5.0_ROC model!")
+print(paste0(Sys.time(), " - Started training the C5.0_ROC model!"))
 m_c50 = train(Tissue_type ~., data = train_set,
               method="C5.0", metric = "logLoss",
               trControl = ctrl2, tuneGrid = grid1)
+print(paste0(Sys.time(), " - Finished training the C5.0_ROC model!"))
 saveRDS(m_c50, "/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/prediction_models/C5.0_ROC.rds")
-print("Finished training the C5.0_ROC model!")
