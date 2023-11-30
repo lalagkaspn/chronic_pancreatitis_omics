@@ -158,7 +158,7 @@ optimal_lasso_glmnet = glmnet(x = train_set %>% dplyr::select(-Tissue_type),
                               family = "multinomial", 
                               type.multinomial = "grouped",
                               alpha = 1,
-                              lambda = model_lasso$bestTune$lambda)
+                              lambda = model$bestTune$lambda)
 
 # Gather coefficients in a data frame and keep the non-zero ones
 coef_lasso_optimal = as.data.frame(as.matrix(optimal_lasso_glmnet$beta$chronic_pancreatitis))
