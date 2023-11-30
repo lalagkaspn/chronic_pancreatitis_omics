@@ -81,9 +81,10 @@ test_set = test_set %>% inner_join(pheno_microarray, by = "Sample.ID") %>%
 
 # Enable parallel programming
 library(doParallel)
-
 system <- Sys.info()['sysname']
-cores <- detectCores()
+gc()
+cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK")) # detectCores() doesn't work with the way the Slurm limits the number of cores available.
+print(paste0("Number of cores used: ", cores, collapse = ""))
 
 if (system == 'Windows') {
   cl <- makeCluster(getOption('cl.cores', cores), type='PSOCK')

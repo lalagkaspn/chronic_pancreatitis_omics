@@ -68,7 +68,8 @@ test_set = test_set %>% dplyr::inner_join(pheno_microarray, by = "Sample.ID") %>
 system <- Sys.info()['sysname']
 print(paste0("Number of cores used: ", detectCores(), collapse = ""))
 gc()
-cores <- detectCores()
+cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK")) # detectCores() doesn't work with the way the Slurm limits the number of cores available.
+print(cores)
 
 if (system == 'Windows') {
   cl <- makeCluster(getOption('cl.cores', cores), type='PSOCK')

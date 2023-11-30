@@ -3,7 +3,7 @@
 #SBATCH -c 64
 #SBATCH --mem=64GB
 #SBATCH -p cpu
-#SBATCH -t 00:01:00
+#SBATCH -t 00:20:00
 #SBATCH -o /home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/logs/lasso_prediction_%J.out
 #SBATCH -e /home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/logs/lasso_prediction_%J.err
 
