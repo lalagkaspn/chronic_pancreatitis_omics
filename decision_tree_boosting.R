@@ -25,14 +25,14 @@ print("NOTE: packages successfully loaded!")
 selected_markers_pre = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/genes_for_model_training.xlsx")
 train_set = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/ML_output/train_set.xlsx")
 validation_set = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/ML_output/validation_set.xlsx")
-lasso_markers = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/ML_output/Lasso_coefficients.xlsx")
+glmnet_markers = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/ML_output/glmnet_coefficients100.xlsx")
 exprs_microarray = readRDS("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/DGEA/z_exprs_nonas_microarrays.RDS")
 pheno_microarray = read.xlsx("/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/DGEA/Pheno_microarrays.xlsx") %>% 
   dplyr::rename(Sample.ID = GEO_accession)
 
 # Filter train and validation sets for the lasso markers
-train_set = train_set[, c("Tissue_type", lasso_markers$Predictor)]
-validation_set = validation_set[, c("Tissue_type", lasso_markers$Predictor)]
+train_set = train_set[, c("Tissue_type", glmnet_markers$Predictor)]
+validation_set = validation_set[, c("Tissue_type", glmnet_markers$Predictor)]
 
 # Formation of the test set
 # Create an "X_Entrez" column for easy joins between datasets
@@ -48,7 +48,7 @@ exprs_microarray_df = exprs_microarray_df %>% dplyr::inner_join(selected_markers
                                                                 by = "x_entrez") %>%
   dplyr::select(-x_entrez, -EntrezGene.ID, -HGNC_Official)
 rownames(exprs_microarray_df) = exprs_microarray_df$Gene.Symbol
-exprs_microarray_df = exprs_microarray_df[lasso_markers$Predictor, ]
+exprs_microarray_df = exprs_microarray_df[glmnet_markers$Predictor, ]
 
 # Transpose to create a samples by genes data frame and add labels
 test_set = as.data.frame(t(exprs_microarray_df))
