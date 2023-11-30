@@ -1,0 +1,7 @@
+[1] "Packages successfully loaded!"
+          used  (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells 2292444 122.5    6675520 356.6  4388906 234.4
+Vcells 9215920  70.4   25322813 193.2 25312125 193.2
+[1] "Number of cores used: 64"
+[1] "2023-11-30 18:17:25 - Started fitting the L2-SVM model!"
+[1] "2023-11-30 18:17:29 - Finished fitting the L2-SVM model!"

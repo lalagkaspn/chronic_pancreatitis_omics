@@ -1,0 +1,7 @@
+[1] "Packages successfully loaded!"
+          used  (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells 2294558 122.6    6677946 356.7  4391019 234.6
+Vcells 9219702  70.4   25329375 193.3 25315907 193.2
+[1] "Number of cores used: 64"
+[1] "2023-11-30 18:18:25 - Started training the RF-k model!"
+[1] "2023-11-30 18:18:46 - Finished training the RF-k model!"

@@ -1,0 +1,7 @@
+[1] "Packages successfully loaded!"
+          used  (Mb) gc trigger  (Mb) max used  (Mb)
+Ncells 2292080 122.5    6675070 356.5  4388407 234.4
+Vcells 9215312  70.4   25321677 193.2 25311517 193.2
+[1] "Number of cores used: 64"
+[1] "2023-11-30 18:18:38 - Started training the C5.0_ROC model!"
+[1] "2023-11-30 18:19:06 - Finished training the C5.0_ROC model!"

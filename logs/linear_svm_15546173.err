@@ -1,0 +1,42 @@
+loading bzip2 version 1.0.8
+loading libiconv version 1.16
+loading libunistring version 0.9.10
+loading libidn2 version 2.3.0
+loading zlib version 1.2.11
+loading openssl version 1.1.1l
+loading curl version 7.83.0
+loading icu4c version 67.1
+loading ncurses version 6.2
+loading openjdk version 11.0.12_7
+loading pcre2 version 10.36
+loading readline version 8.1
+loading texlive version 20220000
+loading which version 2.21
+loading xz version 5.2.5
+loading r version 4.2.0
+
+Attaching package: ‘MLmetrics’
+
+The following object is masked from ‘package:base’:
+
+    Recall
+
+Loading required package: ggplot2
+Loading required package: lattice
+
+Attaching package: ‘caret’
+
+The following objects are masked from ‘package:MLmetrics’:
+
+    MAE, RMSE
+
+Loading required package: foreach
+Loading required package: iterators
+Loading required package: parallel
+
+Attaching package: ‘kernlab’
+
+The following object is masked from ‘package:ggplot2’:
+
+    alpha
+
