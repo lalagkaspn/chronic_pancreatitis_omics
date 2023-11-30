@@ -108,7 +108,7 @@ RNGversion("4.2.2")
 set.seed(123)
 print("Training the C5.0_ROC model!")
 m_c50 = train(Tissue_type ~., data = train_set,
-              method="C5.0", metric = "ROC",
+              method="C5.0", metric = "logLoss",
               trControl = ctrl2, tuneGrid = grid1)
 saveRDS(m_c50, "/home/panagiotisnikolaos_lalagkas_student_uml_edu/chronic_pancreatitis_omics/prediction_models/C5.0_ROC.rds")
 print("Finished training the C5.0_ROC model!")

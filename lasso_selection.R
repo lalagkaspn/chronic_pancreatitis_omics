@@ -1,9 +1,19 @@
+#!/usr/bin/env Rscript
+
 # Preparation #####
+.libPaths(c("/home/panagiotisnikolaos_lalagkas_student_uml_edu/R/x86_64-pc-linux-gnu-library/4.2",
+            "/usr/local/lib/R/site-library",
+            "/usr/local/lib/R/library",
+            "/modules/spack/opt/spack/linux-ubuntu20.04-x86_64/gcc-9.4.0/r-4.2.0-3kitpfbxevyhxd2adiznenkjqqdbekzs/rlib/R/library"))
 library(dplyr)
-library(stringr)
-library(openxlsx)
-library(caret)
+library(stringr, lib.loc = "/home/panagiotisnikolaos_lalagkas_student_uml_edu/R/x86_64-pc-linux-gnu-library/4.2")
+library(openxlsx, lib.loc = "/home/panagiotisnikolaos_lalagkas_student_uml_edu/R/x86_64-pc-linux-gnu-library/4.2")
+library(caret, lib.loc = "/home/panagiotisnikolaos_lalagkas_student_uml_edu/R/x86_64-pc-linux-gnu-library/4.2")
 library(glmnet)
+library(doParallel, lib.loc = "/home/panagiotisnikolaos_lalagkas_student_uml_edu/R/x86_64-pc-linux-gnu-library/4.2")
+
+# HPC test
+print("Packages successfully loaded!")
 
 # This script requires extensive computational resources and it was submitted
 # to a HPC, where 50 cores were employed along with x GB of RAM
@@ -11,10 +21,9 @@ library(glmnet)
 # Intermediate objects can be requested from the authors
 
 # Enable parallel programming
-library(doParallel)
-
 system <- Sys.info()['sysname']
-cores <- 50 # detectCores()
+cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK")) # detectCores() doesn't work with the way the Slurm limits the number of cores available.
+print(cores)
 
 if (system == 'Windows') {
   cl <- makeCluster(getOption('cl.cores', cores), type='PSOCK')
@@ -81,10 +90,10 @@ train_set = train_set %>% dplyr::select(-Study, -nr)
 validation_set = validation_set %>% dplyr::select(-Study, -nr)
 
 # Convert gene columns to the numeric type
-train_set[!colnames(train_set) %in% "Tissue_type"] = 
+train_set[!colnames(train_set) %in% "Tissue_type"] =
   lapply(train_set[!colnames(train_set) %in% "Tissue_type"],
          function(x) as.numeric(x))
-validation_set[!colnames(validation_set) %in% "Tissue_type"] = 
+validation_set[!colnames(validation_set) %in% "Tissue_type"] =
   lapply(validation_set[!colnames(validation_set) %in% "Tissue_type"],
          function(x) as.numeric(x))
 
@@ -95,8 +104,8 @@ write.xlsx(validation_set, "ML_output/validation_set.xlsx")
 # Logistic Regression: backward and regularised models #####
 
 # Define control for repeated cross-validation
-train_control <- trainControl(method = "repeatedcv", 
-                              number = 10, 
+train_control <- trainControl(method = "repeatedcv",
+                              number = 10,
                               repeats = 10,
                               # search = "grid",
                               allowParallel = TRUE
@@ -114,9 +123,9 @@ tuning_grid_lasso <- expand.grid(alpha = 1, lambda = lambda_values)
 
 RNGversion("4.2.2")
 set.seed(123)
-model <- train(Tissue_type ~ ., 
-               data = train_set, 
-               method = "glmnet", 
+model <- train(Tissue_type ~ .,
+               data = train_set,
+               method = "glmnet",
                trControl = train_control,
                tuneGrid = tuning_grid,
                family = "multinomial",
@@ -124,54 +133,54 @@ model <- train(Tissue_type ~ .,
 
 saveRDS(model, "model.RDS")
 
-# Load the RDS
-# model = readRDS("model.rds")
-
-# Print the basic model info
-print(model)
-
-# Print the best tune values
-print(model$bestTune)
-#     alpha   lambda
-# 26 0.3333333 0.129155
-
-# Print the basic model info for lasso only
-lasso_results = model$results[model$results$alpha == 1,] %>%
-  dplyr::arrange(desc(Accuracy))
-print(lasso_results)
-
-# Best lasso model
-#     alpha   lambda
-#      1   0.07742637
-
-# The classification accuracy of the best lasso model and that of the
-# best elastic net model overall, are almost equal:
-
-# Model  alpha  lambda      accuracy    kappa
-# Lasso: 1      0.07742637  0.5958757  0.2937924
-# ENet:  0.33   0.129155    0.5985210  0.3160064577
-
-# We can therefore use lasso for feature selection
-# Fit lasso using glmnet, no cross validation and set lambda equal to the optimal lambda from caret
-optimal_lasso_glmnet = glmnet(x = train_set %>% dplyr::select(-Tissue_type),
-                              y = train_set$Tissue_type,
-                              family = "multinomial", 
-                              type.multinomial = "grouped",
-                              alpha = 1,
-                              lambda = model$bestTune$lambda)
-
-# Gather coefficients in a data frame and keep the non-zero ones
-coef_lasso_optimal = as.data.frame(as.matrix(optimal_lasso_glmnet$beta$chronic_pancreatitis))
-coef_lasso_optimal$Predictor = rownames(coef_lasso_optimal)
-coef_lasso_optimal$PDAC_coef = as.numeric(as.matrix(optimal_lasso_glmnet$beta$tumor)[,1])
-coef_lasso_optimal$normal_coef = as.numeric(as.matrix(optimal_lasso_glmnet$beta$normal)[,1])
-coef_lasso_optimal = coef_lasso_optimal %>% dplyr::select(Predictor, everything())
-colnames(coef_lasso_optimal)[2] = "CP_coef"
-coef_lasso_optimal = coef_lasso_optimal %>% 
-  dplyr::arrange(desc(abs(CP_coef))) %>% # rank by CP coefficient
-  dplyr::filter(abs(CP_coef) > 0)
-
-# Coefficients for all three levels sum to zero
-# coef_lasso_optimal$sum_coef = apply(coef_lasso_optimal[, c(2:4)], 1, function(x) sum(x))
-
-write.xlsx(coef_lasso_optimal, "ML_output/Lasso_coefficients.xlsx")
+# # Load the RDS
+# # model = readRDS("model.rds")
+# 
+# # Print the basic model info
+# print(model)
+# 
+# # Print the best tune values
+# print(model$bestTune)
+# #     alpha   lambda
+# # 26 0.3333333 0.129155
+# 
+# # Print the basic model info for lasso only
+# lasso_results = model$results[model$results$alpha == 1,] %>%
+#   dplyr::arrange(desc(Accuracy))
+# print(lasso_results)
+# 
+# # Best lasso model
+# #     alpha   lambda
+# #      1   0.07742637
+# 
+# # The classification accuracy of the best lasso model and that of the
+# # best elastic net model overall, are almost equal:
+# 
+# # Model  alpha  lambda      accuracy    kappa
+# # Lasso: 1      0.07742637  0.5958757  0.2937924
+# # ENet:  0.33   0.129155    0.5985210  0.3160064577
+# 
+# # We can therefore use lasso for feature selection
+# # Fit lasso using glmnet, no cross validation and set lambda equal to the optimal lambda from caret
+# optimal_lasso_glmnet = glmnet(x = train_set %>% dplyr::select(-Tissue_type),
+#                               y = train_set$Tissue_type,
+#                               family = "multinomial", 
+#                               type.multinomial = "grouped",
+#                               alpha = 1,
+#                               lambda = model$bestTune$lambda)
+# 
+# # Gather coefficients in a data frame and keep the non-zero ones
+# coef_lasso_optimal = as.data.frame(as.matrix(optimal_lasso_glmnet$beta$chronic_pancreatitis))
+# coef_lasso_optimal$Predictor = rownames(coef_lasso_optimal)
+# coef_lasso_optimal$PDAC_coef = as.numeric(as.matrix(optimal_lasso_glmnet$beta$tumor)[,1])
+# coef_lasso_optimal$normal_coef = as.numeric(as.matrix(optimal_lasso_glmnet$beta$normal)[,1])
+# coef_lasso_optimal = coef_lasso_optimal %>% dplyr::select(Predictor, everything())
+# colnames(coef_lasso_optimal)[2] = "CP_coef"
+# coef_lasso_optimal = coef_lasso_optimal %>% 
+#   dplyr::arrange(desc(abs(CP_coef))) %>% # rank by CP coefficient
+#   dplyr::filter(abs(CP_coef) > 0)
+# 
+# # Coefficients for all three levels sum to zero
+# # coef_lasso_optimal$sum_coef = apply(coef_lasso_optimal[, c(2:4)], 1, function(x) sum(x))
+# 
+# write.xlsx(coef_lasso_optimal, "ML_output/Lasso_coefficients.xlsx")

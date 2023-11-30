@@ -1,0 +1,5 @@
+Generally you want the number of running threads to be no more than the number of cores allocated to the job.
+detectCores() doesn't work with the way the Slurm limits the number of cores available.
+Instead, use the environment variable SLURM_CPUS_PER_TASK to get the correct number.
+
+cores = as.integer(Sys.getenv("SLURM_CPUS_PER_TASK")) 
