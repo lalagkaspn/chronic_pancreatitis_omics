@@ -80,6 +80,14 @@ validation_set$Tissue_type = factor(validation_set$Tissue_type, levels = c("chro
 train_set = train_set %>% dplyr::select(-Study, -nr)
 validation_set = validation_set %>% dplyr::select(-Study, -nr)
 
+# Convert gene columns to the numeric type
+train_set[!colnames(train_set) %in% "Tissue_type"] = 
+  lapply(train_set[!colnames(train_set) %in% "Tissue_type"],
+         function(x) as.numeric(x))
+validation_set[!colnames(validation_set) %in% "Tissue_type"] = 
+  lapply(validation_set[!colnames(validation_set) %in% "Tissue_type"],
+         function(x) as.numeric(x))
+
 # Write out
 write.xlsx(train_set, "ML_output/train_set.xlsx")
 write.xlsx(validation_set, "ML_output/validation_set.xlsx")
