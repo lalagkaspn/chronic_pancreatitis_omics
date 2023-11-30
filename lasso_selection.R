@@ -135,52 +135,46 @@ saveRDS(model, "model.RDS")
 
 # # Load the RDS
 # # model = readRDS("model.rds")
-# 
-# # Print the basic model info
-# print(model)
-# 
-# # Print the best tune values
-# print(model$bestTune)
-# #     alpha   lambda
-# # 26 0.3333333 0.129155
-# 
-# # Print the basic model info for lasso only
-# lasso_results = model$results[model$results$alpha == 1,] %>%
-#   dplyr::arrange(desc(Accuracy))
-# print(lasso_results)
-# 
-# # Best lasso model
-# #     alpha   lambda
-# #      1   0.07742637
-# 
-# # The classification accuracy of the best lasso model and that of the
-# # best elastic net model overall, are almost equal:
-# 
-# # Model  alpha  lambda      accuracy    kappa
-# # Lasso: 1      0.07742637  0.5958757  0.2937924
-# # ENet:  0.33   0.129155    0.5985210  0.3160064577
-# 
-# # We can therefore use lasso for feature selection
-# # Fit lasso using glmnet, no cross validation and set lambda equal to the optimal lambda from caret
-# optimal_lasso_glmnet = glmnet(x = train_set %>% dplyr::select(-Tissue_type),
-#                               y = train_set$Tissue_type,
-#                               family = "multinomial", 
-#                               type.multinomial = "grouped",
-#                               alpha = 1,
-#                               lambda = model$bestTune$lambda)
-# 
-# # Gather coefficients in a data frame and keep the non-zero ones
-# coef_lasso_optimal = as.data.frame(as.matrix(optimal_lasso_glmnet$beta$chronic_pancreatitis))
-# coef_lasso_optimal$Predictor = rownames(coef_lasso_optimal)
-# coef_lasso_optimal$PDAC_coef = as.numeric(as.matrix(optimal_lasso_glmnet$beta$tumor)[,1])
-# coef_lasso_optimal$normal_coef = as.numeric(as.matrix(optimal_lasso_glmnet$beta$normal)[,1])
-# coef_lasso_optimal = coef_lasso_optimal %>% dplyr::select(Predictor, everything())
-# colnames(coef_lasso_optimal)[2] = "CP_coef"
-# coef_lasso_optimal = coef_lasso_optimal %>% 
-#   dplyr::arrange(desc(abs(CP_coef))) %>% # rank by CP coefficient
-#   dplyr::filter(abs(CP_coef) > 0)
-# 
-# # Coefficients for all three levels sum to zero
-# # coef_lasso_optimal$sum_coef = apply(coef_lasso_optimal[, c(2:4)], 1, function(x) sum(x))
-# 
-# write.xlsx(coef_lasso_optimal, "ML_output/Lasso_coefficients.xlsx")
+
+# Print the basic model info
+print(model)
+
+# Print the best tune values (a ridge regression model with 67.3% accuracy)
+print(model$bestTune)
+#     alpha   lambda
+# 10      0        1
+
+# Print the basic model info for lasso only
+lasso_results = model$results[model$results$alpha == 1,] %>%
+  dplyr::arrange(desc(Accuracy))
+print(lasso_results)
+
+# Best lasso model (54% accuracy)
+#     alpha   lambda
+#      1         0.1
+
+# Fit glmnet, no cross validation and set lambda equal to the optimal lambda from caret
+optimal_glmnet = glmnet(x = train_set %>% dplyr::select(-Tissue_type),
+                              y = train_set$Tissue_type,
+                              family = "multinomial", 
+                              type.multinomial = "grouped",
+                              alpha = model$bestTune$alpha,
+                              lambda = model$bestTune$lambda)
+
+# Gather coefficients in a data frame and keep the non-zero ones
+coef_optimal = as.data.frame(as.matrix(optimal_glmnet$beta$chronic_pancreatitis))
+coef_optimal$Predictor = rownames(coef_optimal)
+coef_optimal$PDAC_coef = as.numeric(as.matrix(optimal_glmnet$beta$tumor)[,1])
+coef_optimal$normal_coef = as.numeric(as.matrix(optimal_glmnet$beta$normal)[,1])
+coef_optimal = coef_optimal %>% dplyr::select(Predictor, everything())
+colnames(coef_optimal)[2] = "CP_coef"
+coef_optimal = coef_optimal %>% 
+  dplyr::arrange(desc(abs(CP_coef))) %>% # rank by CP coefficient
+  dplyr::filter(abs(CP_coef) > 0)
+
+# Coefficients for all three levels sum to zero
+coef_optimal$sum_coef = apply(coef_optimal[, c(2:4)], 1, function(x) sum(x))
+write.xlsx(coef_optimal, "ML_output/glmnet_coefficients.xlsx")
+
+# Pick the top 100 features (in terms of CP coefficient magnitude)
+coef_optimal_100 = coef_optimal[1:100, ]
