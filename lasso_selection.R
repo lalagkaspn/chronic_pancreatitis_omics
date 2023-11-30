@@ -178,3 +178,4 @@ write.xlsx(coef_optimal, "ML_output/glmnet_coefficients.xlsx")
 
 # Pick the top 100 features (in terms of CP coefficient magnitude)
 coef_optimal_100 = coef_optimal[1:100, ]
+write.xlsx(coef_optimal_100, "ML_output/glmnet_coefficients100.xlsx")
