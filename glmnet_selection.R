@@ -116,7 +116,7 @@ alpha_values <- seq(0, 1, length = 10)
 lambda_values <- exp(seq(log(0.01), log(1), length = 10))
 
 tuning_grid <- expand.grid(alpha = alpha_values, lambda = lambda_values)
-tuning_grid_lasso <- expand.grid(alpha = 1, lambda = lambda_values)
+# tuning_grid_lasso <- expand.grid(alpha = 1, lambda = lambda_values)
 
 # Train the model (computationally intensive - you can load the RDS, see below)
 # Replace dataset and y with your dataset and response variable names
