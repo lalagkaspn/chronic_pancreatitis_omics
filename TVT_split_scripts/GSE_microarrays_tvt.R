@@ -13,6 +13,7 @@ library(limma)
 library(openxlsx)
 library(EnhancedVolcano)
 library(impute)
+library(statmod)
 
 ## Set type for image compression based on operating system
 ## For macOS, X11 installation is required (link: https://www.xquartz.org/)
@@ -373,10 +374,10 @@ names(na_esets_test) = names(GEOsets_test)
 na_esets_test 
 
 # Missing values in 2 studies 
-# GSE101462: 22 (full sets)
-# GSE77858: 5907 (full sets)
-# GSE101462: 21 (train-val sets)
-# GSE77858: 5582 (train-val sets)
+# GSE101462: 0 (full sets)
+# GSE77858: 0 (full sets)
+# GSE101462: 0 (train-val sets)
+# GSE77858: 0 (train-val sets)
 # GSE101462: 1 (test sets)
 # GSE77858: 325 (test sets)
 
@@ -434,7 +435,7 @@ neighbors_list <- lapply(esets_trainval, function(eset) {
   as.data.frame(neighbors)
 })
 names(neighbors_list) <- names(esets_trainval)
-rm(i); gc()
+gc()
 
 # Imputing the sets that correspond to neighbors_list:
 esets_test_new <- list()
@@ -597,7 +598,7 @@ mapped_blastn_filt = mapped_blastn %>%
 length(which(duplicated(mapped_blastn_filt$probe)))
 # 0
 length(which(duplicated(mapped_blastn_filt$ENTREZ_GENE_ID)))
-# 11,950
+# 11,869
 
 # The numbers above mean each probe is mapped to a unique Entrez ID, but multiple probes
 # may map to the same ID. For each of these probes we calculate the variance and keep the one 
@@ -1008,8 +1009,20 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 # End of multiplot function
 
+if (Sys.info()['sysname'] == "Windows") {
+  type_compression = "windows"
+} 
+# if Linux
+if (Sys.info()['sysname'] == "Linux") {
+  type_compression = "windows"
+}
+# if macOS
+if (Sys.info()['sysname'] == "Darwin") {
+  type_compression = "cairo"
+} 
+
 tiff("QC/GSE_microarrays/MDS_multiplot.tiff", 
-     width = 1920, height = 2160, res = 700, compression = "lzw", type = type_compression)
+     width = 1920, height = 2160, res = 700, compression = "lzw")
 multiplot(original_MDS, KBZ_MDS_plot, cols = 1)
 m = ggplot(multiplot(original_MDS, KBZ_MDS_plot, cols = 1))
 dev.off(); rm(m)
@@ -1019,7 +1032,10 @@ trainval_pheno_ordered = full_pdata[full_pdata$GEO_accession %in% trainval_sampl
 trainval_pheno_ordered = trainval_pheno_ordered[match(trainval_samples,
                                                       trainval_pheno_ordered$GEO_accession), ]
 original_eset = as.data.frame(original_exprs_nonas[, trainval_samples])
-original_boxplot = ggplot(reshape2::melt(original_eset[, trainval_samples]), aes(x=variable, y=value)) +
+data_boxplot = reshape2::melt(original_eset[, trainval_samples])
+data_boxplot = left_join(data_boxplot, full_pdata[, c(1,3)], by = c("variable" = "GEO_accession")) %>%
+  arrange(Study, variable)
+original_boxplot = ggplot(data_boxplot, aes(x=variable, y=value)) +
   geom_boxplot(outlier.size = 0.01, outlier.shape = 20, linewidth = 0.02,
                fill = c(rep("cyan", 18),
                         rep("chartreuse", 23),
@@ -1047,6 +1063,7 @@ original_boxplot = ggplot(reshape2::melt(original_eset[, trainval_samples]), aes
   labs(title = "Boxplot of expression: original values",
        x = "\nSamples",
        y = "Expression\n")
+rm(data_boxplot)
 
 original_boxplot
 ggsave(filename = "Original_boxplot.tiff",
@@ -1057,7 +1074,10 @@ dev.off()
 
 # Global expression boxplot: z-score normalised matrix
 z_eset = as.data.frame(z_exprs_nonas[, trainval_samples])
-KBZ_boxplot = ggplot(reshape2::melt(z_eset[, trainval_samples]), aes(x=variable, y=value)) +
+data_boxplot = reshape2::melt(z_eset[, trainval_samples])
+data_boxplot = left_join(data_boxplot, full_pdata[, c(1,3)], by = c("variable" = "GEO_accession")) %>%
+  arrange(Study, variable)
+KBZ_boxplot = ggplot(data_boxplot, aes(x=variable, y=value)) +
   geom_boxplot(outlier.size = 0.01, outlier.shape = 20, linewidth = 0.02,
                fill = c(rep("cyan", 18),
                         rep("chartreuse", 23),
@@ -1085,6 +1105,7 @@ KBZ_boxplot = ggplot(reshape2::melt(z_eset[, trainval_samples]), aes(x=variable,
   labs(title = "Boxplot of expression: z-score-normalised data",
        x = "\nSamples",
        y = "Expression\n")
+rm(data_boxplot)
 
 KBZ_boxplot
 ggsave(filename = "z_boxplot.tiff",
@@ -1094,7 +1115,7 @@ ggsave(filename = "z_boxplot.tiff",
 dev.off()
 
 tiff("QC/GSE_microarrays/Boxplot_multiplot.tiff", 
-     width = 7680, height = 6480, res = 700, compression = "lzw", type = type_compression)
+     width = 7680, height = 6480, res = 700, compression = "lzw")
 multiplot(original_boxplot, KBZ_boxplot, cols = 1)
 m = ggplot(multiplot(original_boxplot, KBZ_boxplot, cols = 1))
 dev.off(); rm(m)
@@ -1108,7 +1129,7 @@ save_pheatmap_png <- function(x, filename, width=2600*2, height=1800*2, res = 70
 }
 
 save_pheatmap_tiff <- function(x, filename, width=2600*2, height=1800*2, res = 700) {
-  tiff(filename, width = width, height = height, res = res, compression = "lzw", type = type_compression)
+  tiff(filename, width = width, height = height, res = res, compression = "lzw")
   grid::grid.newpage()
   grid::grid.draw(x$gtable)
   dev.off()
