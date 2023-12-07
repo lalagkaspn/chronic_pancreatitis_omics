@@ -428,13 +428,13 @@ original_exprs = esets_trainval[[1]] %>%
 
 rows = original_exprs$ENTREZ_GENE_ID
 original_exprs = as.matrix(original_exprs %>% dplyr::select(-ENTREZ_GENE_ID))
-rownames(original_exprs) = rows; rm(rows) # 24038 x 558
+rownames(original_exprs) = rows; rm(rows) # 23722 x 558
 # Making sure we do not have NAs in any row
 original_exprs = original_exprs[rowSums(is.na(original_exprs)) != ncol(original_exprs), ]
-original_exprs_nonas = na.omit(original_exprs) # 24038 x 558
+original_exprs_nonas = na.omit(original_exprs) # 23722 x 558
 # Keeping all samples in our full_pdata object
 original_exprs_nonas = original_exprs_nonas[, intersect(full_pdata$GEO_accession,
-                                                        colnames(original_exprs_nonas))] # 24038 x 558
+                                                        colnames(original_exprs_nonas))] # 23722 x 558
 
 ##### z-score-transformation #####
 # KBZ transformation method (https:://www.biostars.org/p/283083/)
@@ -508,12 +508,12 @@ z_test_exprs = z_test[[1]] %>% inner_join(z_test[[2]], by = "ENTREZ_GENE_ID") %>
   dplyr::select(ENTREZ_GENE_ID, everything())
 
 rownames(z_test_exprs) = z_test_exprs$ENTREZ_GENE_ID
-z_test_exprs = as.matrix(z_test_exprs %>% dplyr::select(-ENTREZ_GENE_ID)) # 24038 x 62
+z_test_exprs = as.matrix(z_test_exprs %>% dplyr::select(-ENTREZ_GENE_ID)) # 23722 x 62
 # Making sure we do not have NAs in any row
 z_test_exprs = z_test_exprs[rowSums(is.na(z_test_exprs)) != ncol(z_test_exprs), ]
-z_test_exprs_nonas = na.omit(z_test_exprs) # 20711 x 62
+z_test_exprs_nonas = na.omit(z_test_exprs) # 20455 x 62
 z_test_exprs_nonas = z_test_exprs_nonas[, intersect(full_pdata$GEO_accession,
-                                                    colnames(z_test_exprs_nonas))] # 20711 x 62
+                                                    colnames(z_test_exprs_nonas))] # 20455 x 62
 
 
 # Separate runs because the 2nd study does not have GSM sample IDs for the 
@@ -532,12 +532,12 @@ z_exprs = z_trainval[[1]] %>% inner_join(z_trainval[[2]], by = "ENTREZ_GENE_ID")
   dplyr::select(ENTREZ_GENE_ID, everything())
 
 rownames(z_exprs) = z_exprs$ENTREZ_GENE_ID
-z_exprs = as.matrix(z_exprs %>% dplyr::select(-ENTREZ_GENE_ID)) # 24038 x 558
+z_exprs = as.matrix(z_exprs %>% dplyr::select(-ENTREZ_GENE_ID)) # 22554 x 558
 # Making sure we do not have NAs in any row
 z_exprs = z_exprs[rowSums(is.na(z_exprs)) != ncol(z_exprs), ]
-z_exprs_nonas = na.omit(z_exprs) # 20711 x 558
+z_exprs_nonas = na.omit(z_exprs) # 20455 x 558
 z_exprs_nonas = z_exprs_nonas[, intersect(full_pdata$GEO_accession,
-                                          colnames(z_exprs_nonas))] # 20711 x 620
+                                          colnames(z_exprs_nonas))] # 20455 x 558
 # save
 saveRDS(z_exprs_nonas, "TVT_split_scripts/z_exprs_nonas_RNAseq_trainval.rds")
 

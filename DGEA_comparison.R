@@ -109,8 +109,16 @@ nr_dysregulated_genes_rnaseq = nrow(cp_vs_normal_rnaseq_common_genes_sig)
 nr_dysregulated_genes_rnaseq
 
 ## overlap of significantly dysregulated genes
-overlap_sig_dys_genes = intersect(cp_vs_normal_microarrays_common_genes_sig$EntrezGene.ID, cp_vs_normal_rnaseq_common_genes_sig$EntrezGene.ID)
+overlap_sig_dys_genes = intersect(cp_vs_normal_microarrays_common_genes_sig$Gene.Symbol, cp_vs_normal_rnaseq_common_genes_sig$Gene.Symbol)
 length(overlap_sig_dys_genes)
+
+## volcano plot of the overlapping genes
+EnhancedVolcano::EnhancedVolcano(cp_vs_normal_microarrays_common_genes_sig, 
+                                 selectLab = overlap_sig_dys_genes,
+                                 x = "logFC", y = "adj.P.Val", lab = "Gene.Symbol")
+EnhancedVolcano::EnhancedVolcano(cp_vs_normal_rnaseq_common_genes_sig,
+                                 selectLab = overlap_sig_dys_genes,
+                                 x = "logFC", y = "adj.P.Val", lab = "Gene.Symbol")
 
 ## check the significance of the overlap
 # the background genes are the genes tested in both microarry and RNA-seq data (n=13,029)
