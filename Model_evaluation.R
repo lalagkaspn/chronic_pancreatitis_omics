@@ -282,4 +282,7 @@ cat(paste0("The final model (Random Forest, logLoss-optimized) achieved ",
              round(accuracy_test*100, 2), "% accuracy and AUC: ", 
              AUC_test_final_model, ", in the test set."))
 
+x = data.frame(actual = test_set$Tissue_type, predicted = predict(final_model, test_set))
+table(x)
+
 rm(test_pred, agree_test)
